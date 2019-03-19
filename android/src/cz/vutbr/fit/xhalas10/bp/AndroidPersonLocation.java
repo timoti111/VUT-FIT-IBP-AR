@@ -16,7 +16,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
@@ -31,22 +30,22 @@ import cz.vutbr.fit.xhalas10.bp.utils.GeoidCalculator;
 
 public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-    GoogleApiClient googleApiClient;
-    LocationRequest locationRequest;
-    FusedLocationProviderClient fusedLocationClient;
-    boolean requestingLocationUpdates = false;
+    static final int REQUEST_CHECK_SETTINGS = 8465;
+    private static final long UPDATE_INTERVAL = 1000, FASTEST_INTERVAL = 500; // = 5 seconds
+    private static final float SMALLEST_DISPLACEMENT = 1.0f; // = 5 seconds
+    private static final int TWO_MINUTES = 1000 * 60 * 2;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private FusedLocationProviderClient fusedLocationClient;
+    private boolean requestingLocationUpdates = false;
     private LocationCallback locationCallback;
-    Activity activity;
+    private Activity activity;
     private Location currentBestLocation;
     private double latitude;
     private double longitude;
     private double altitude;
-    private static final long UPDATE_INTERVAL = 1000, FASTEST_INTERVAL = 500; // = 5 seconds
-    private static final float SMALLEST_DISPLACEMENT = 1.0f; // = 5 seconds
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
-    public static final int REQUEST_CHECK_SETTINGS = 8465;
 
-    public AndroidPersonLocation(Activity activity) {
+    AndroidPersonLocation(Activity activity) {
         this.activity = activity;
         // we build google api client
         googleApiClient = new GoogleApiClient.Builder(activity).
@@ -78,13 +77,11 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
         }
     }
 
-    private void checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+    private boolean checkPermissions() {
+        return ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_DENIED
                 && ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_DENIED;
     }
 
     @Override
@@ -102,9 +99,11 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
         return altitude;
     }
 
-    /** Determines whether one Location reading is better than the current Location fix
-     * @param location  The new Location that you want to evaluate
-     * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+    /**
+     * Determines whether one Location reading is better than the current Location fix
+     *
+     * @param location            The new Location that you want to evaluate
+     * @param currentBestLocation The current Location fix, to which you want to compare the new one
      */
     private boolean isBetterLocation(Location location, Location currentBestLocation) {
         if (currentBestLocation == null) {
@@ -144,7 +143,8 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     @SuppressLint("MissingPermission")
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        checkPermissions();
+        if (!checkPermissions())
+            return;
         // Permissions ok, we get last location
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(activity, new OnSuccessListener<Location>() {
@@ -194,27 +194,26 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
 
     }
 
-    public void onResume() {
-        if (googleApiClient != null  &&  !googleApiClient.isConnected()) {
+    void onResume() {
+        if (googleApiClient != null && !googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
         startLocationUpdates();
     }
 
-    public void onPause() {
+    void onPause() {
         stopLocationUpdates();
         // stop location updates
-        if (googleApiClient != null  &&  googleApiClient.isConnected()) {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
             googleApiClient.disconnect();
         }
     }
 
     @SuppressLint("MissingPermission")
-    public void startLocationUpdates() {
-        if (!requestingLocationUpdates) {
-            checkPermissions();
+    void startLocationUpdates() {
+        if (!requestingLocationUpdates && checkPermissions()) {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
-            boolean requestingLocationUpdates = true;
+            requestingLocationUpdates = true;
         }
     }
 
@@ -229,7 +228,7 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     private void stopLocationUpdates() {
         if (requestingLocationUpdates) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
-            boolean requestingLocationUpdates = false;
+            requestingLocationUpdates = false;
         }
     }
 }

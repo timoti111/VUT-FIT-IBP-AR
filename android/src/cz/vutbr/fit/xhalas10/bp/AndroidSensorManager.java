@@ -22,7 +22,7 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
     private boolean compass = false;
 
 
-    public AndroidSensorManager(SensorManager sensorManager) {
+    AndroidSensorManager(SensorManager sensorManager) {
         this.sensorManager = sensorManager;
         gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
@@ -33,12 +33,12 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
         rotationMatrix = new Matrix4();
     }
 
-    public void onResume() {
+    void onResume() {
         sensorManager.registerListener(this, actualRotationSensor, actualSamplingRate);
         sensorManager.registerListener(this, secondaryRotationSensor, secondarySamplingRate);
     }
 
-    public void onPause() {
+    void onPause() {
         // make sure to turn our sensor off when the activity is paused
         sensorManager.unregisterListener(this);
     }
@@ -55,6 +55,7 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
             invertQuat(event.values, test);
             SensorManager.getRotationMatrixFromVector(
                     mRotationMatrix, test);
+            //noinspection SuspiciousNameCombination
             SensorManager.remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_MINUS_Z, SensorManager.AXIS_MINUS_X, mRotationMatrix);
             rotationMatrix.set(mRotationMatrix);
         }
@@ -65,6 +66,7 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
                     mRotationMatrix, test);
             SensorManager.getOrientation(mRotationMatrix, orientation);
             if (compass) {
+                //noinspection SuspiciousNameCombination
                 SensorManager.remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_MINUS_Z, SensorManager.AXIS_MINUS_X, mRotationMatrix);
                 rotationMatrix.set(mRotationMatrix);
             }

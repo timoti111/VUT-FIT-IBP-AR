@@ -24,11 +24,12 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import android.support.annotation.NonNull;
 
 public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableListener, HardwareCamera {
-    private boolean mGLInit;
     private SurfaceTexture mSTexture;
 
     private boolean mUpdateST = false;
@@ -47,22 +48,40 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
 
     private HandlerThread mBackgroundThread;
     private Handler mBackgroundHandler;
+    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+        @Override
+        public void onOpened(@NonNull CameraDevice cameraDevice) {
+            mCameraOpenCloseLock.release();
+            mCameraDevice = cameraDevice;
+            createCameraPreviewSession();
+        }
 
+        @Override
+        public void onDisconnected(CameraDevice cameraDevice) {
+            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            mCameraDevice = null;
+        }
 
+        @Override
+        public void onError(CameraDevice cameraDevice, int error) {
+            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            mCameraDevice = null;
+        }
+    };
     private ShaderProgram shader; //Our shader
     private Mesh mesh; //Our mesh that we will draw the texture on
-    private CameraCharacteristics cameraCharacteristics;
-    public AndroidHardwareCamera(CameraManager cameraManager) {
+
+    AndroidHardwareCamera(CameraManager cameraManager) {
         this.cameraManager = cameraManager;
     }
 
-    public float[] getCameraSensorSize()
-    {
+    public float[] getCameraSensorSize() {
         return sensorSize;
     }
 
-    public float getCameraFocalLength()
-    {
+    public float getCameraFocalLength() {
         return mFocalLengths[0];
     }
 
@@ -85,14 +104,15 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
         try {
             assert cameraManager != null;
             for (String cameraID : cameraManager.getCameraIdList()) {
-                cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraID);
+                CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraID);
+                //noinspection ConstantConditions
                 if (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     mCameraID = cameraID;
                     StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                     mFocalLengths = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
                     SizeF mSensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
                     sensorSize = new float[2];
-                    sensorSize[0] = mSensorSize.getWidth();
+                    sensorSize[0] = Objects.requireNonNull(mSensorSize).getWidth();
                     sensorSize[1] = mSensorSize.getHeight();
 
                     assert map != null;
@@ -151,29 +171,6 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
         }
     }
 
-    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
-        @Override
-        public void onOpened(CameraDevice cameraDevice) {
-            mCameraOpenCloseLock.release();
-            mCameraDevice = cameraDevice;
-            createCameraPreviewSession();
-        }
-
-        @Override
-        public void onDisconnected(CameraDevice cameraDevice) {
-            mCameraOpenCloseLock.release();
-            cameraDevice.close();
-            mCameraDevice = null;
-        }
-
-        @Override
-        public void onError(CameraDevice cameraDevice, int error) {
-            mCameraOpenCloseLock.release();
-            cameraDevice.close();
-            mCameraDevice = null;
-        }
-    };
-
     private void createCameraPreviewSession() {
         try {
             mSTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
@@ -186,7 +183,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
             mCameraDevice.createCaptureSession(Collections.singletonList(surface),
                     new CameraCaptureSession.StateCallback() {
                         @Override
-                        public void onConfigured(CameraCaptureSession cameraCaptureSession) {
+                        public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
                             if (null == mCameraDevice)
                                 return;
 
@@ -205,7 +202,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
                         }
 
                         @Override
-                        public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
+                        public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
                         }
                     }, null
             );
@@ -214,8 +211,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
         }
     }
 
-    public void onResume()
-    {
+    void onResume() {
         startBackgroundThread();
         // When the screen is turned off and turned back on, the SurfaceTexture is already
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
@@ -225,9 +221,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
             openCamera();
     }
 
-    public void onPause() {
-        mGLInit = false;
-        mUpdateST = false;
+    void onPause() {
         closeCamera();
         stopBackgroundThread();
     }
@@ -256,14 +250,14 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
                 new VertexAttribute(VertexAttributes.Usage.Position, 2, "a_position"),
                 new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoord"));
         float[] vertices = {
-                -1.0f,  1.0f,   // Position 0
-                0.0f,   0.0f,   // TexCoord 0
-                -1.0f,  -1.0f,  // Position 1
-                0.0f,   1.0f,   // TexCoord 1
-                1.0f,   -1.0f,  // Position 2
-                1.0f,   1.0f,   // TexCoord 2
-                1.0f,   1.0f,   // Position 3
-                1.0f,   0.0f    // TexCoord 3
+                -1.0f, 1.0f,   // Position 0
+                0.0f, 0.0f,   // TexCoord 0
+                -1.0f, -1.0f,  // Position 1
+                0.0f, 1.0f,   // TexCoord 1
+                1.0f, -1.0f,  // Position 2
+                1.0f, 1.0f,   // TexCoord 2
+                1.0f, 1.0f,   // Position 3
+                1.0f, 0.0f    // TexCoord 3
         };
 
         //The indices come in trios of vertex indices that describe the triangles of our mesh
@@ -275,16 +269,12 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
         mSTexture = new SurfaceTexture(texture[0]);
         mSTexture.setOnFrameAvailableListener(this);
 
-        getCameraInfo(Gdx.graphics.getWidth(),  Gdx.graphics.getHeight());
+        getCameraInfo(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         openCamera();
-
-        mGLInit = true;
     }
 
     @Override
     public void renderBackground() {
-        if (!mGLInit) return;
-
         synchronized (this) {
             if (mUpdateST) {
                 mSTexture.updateTexImage();
