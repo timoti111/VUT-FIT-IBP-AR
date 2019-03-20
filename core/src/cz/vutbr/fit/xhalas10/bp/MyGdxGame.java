@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -49,8 +50,12 @@ public class MyGdxGame extends ApplicationAdapter {
     private float angle = 0;
     private final double TOUCH_SCALE_FACTOR = 63.0 / 1920.0;
     public Stage stage;
-    private Label outputLabel;
+    private Label positionLabel;
+    private Label accuracyLabel;
     private boolean canRotateCamera = false;
+    private SpriteBatch spriteBatch;
+
+    private Poi testPoi;
 
     private UserInterface userInterface;
     private PersonLocation personLocation;
@@ -74,15 +79,23 @@ public class MyGdxGame extends ApplicationAdapter {
         stage = new Stage(new ScreenViewport());
         userInterface = new UserInterface(this);
         userInterface.setToStage();
+        spriteBatch = new SpriteBatch();
 
         BitmapFont font = FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", 50);
         Label.LabelStyle style = new Label.LabelStyle(font, Color.GREEN);
-        outputLabel = new Label("Press a Button", style);
-        outputLabel.setSize(Gdx.graphics.getWidth(), 60);
-        outputLabel.setPosition(0, 0);
-        outputLabel.setAlignment(Align.center);
-        outputLabel.toBack();
-        stage.addActor(outputLabel);
+        positionLabel = new Label("Press a Button", style);
+        positionLabel.setSize(Gdx.graphics.getWidth(), 60);
+        positionLabel.setPosition(0, 0);
+        positionLabel.setAlignment(Align.center);
+        positionLabel.toBack();
+        stage.addActor(positionLabel);
+
+        accuracyLabel = new Label("Press a Button", style);
+        accuracyLabel.setSize(Gdx.graphics.getWidth(), 60);
+        accuracyLabel.setPosition(0, 60);
+        accuracyLabel.setAlignment(Align.center);
+        accuracyLabel.toBack();
+        stage.addActor(accuracyLabel);
 
         Gdx.graphics.setContinuousRendering(false);
 
@@ -96,8 +109,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		double ratio = (double)Gdx.graphics.getWidth() / (double)Gdx.graphics.getHeight();
 		double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double)hardwareCamera.getCameraFocalLength())));
 		cam = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		cam.near = 0.1f;
-		cam.far = 300f;
+		cam.near = 0.01f;
+		cam.far = 3000f;
 		cam.update();
 
         Texture texture = new Texture(Gdx.files.internal("compass_grey2icent.png"));
@@ -122,17 +135,17 @@ public class MyGdxGame extends ApplicationAdapter {
 
 
         earth.setPersonPosition(49.231514, 16.569558, 308.0);
-        Poi poi1 = new Poi();
-        Poi poi2 = new Poi();
-        Poi poi3 = new Poi();
-        Poi poi4 = new Poi();
+        Poi poi1 = new Poi("Chatka 1", cam);
+        Poi poi2 = new Poi("Chatka 2", cam);
+        Poi poi3 = new Poi("Chatka 3", cam);
+        Poi poi4 = new Poi("Chatka 4", cam);
 
-        Poi kopecBazenik = new Poi();
-        Poi budkaZaA02 = new Poi();
-        Poi krizovatkaNaKopci = new Poi();
-        Poi budkaPodKopcom = new Poi();
-        Poi vchodA05= new Poi();
-        Poi vchodA02= new Poi();
+        Poi kopecBazenik = new Poi("Velký kopec", cam);
+        Poi budkaZaA02 = new Poi("Búdka", cam);
+        Poi krizovatkaNaKopci = new Poi("Križovatka", cam);
+        Poi budkaPodKopcom = new Poi("Rozvodňa", cam);
+        Poi vchodA05 = new Poi("Vchod A05", cam);
+        Poi vchodA02 = new Poi("Vchod A02", cam);
         earth.add(instance, 49.230795, 16.568154, 311.0);
         earth.add(poi1, 49.231114, 16.568264, 311.0);
         earth.add(poi2, 49.231254, 16.568456, 307.0);
@@ -144,35 +157,6 @@ public class MyGdxGame extends ApplicationAdapter {
         earth.add(budkaPodKopcom, 49.235859, 16.568215, 310.0);
         earth.add(vchodA05, 49.231937, 16.570472, 280.0);
         earth.add(vchodA02, 49.231666, 16.570102, 284.0);
-
-        //earth.add(Route.createRoute(earth.calculatePosition(49.231431, 16.569100, 292), earth.calculatePosition(49.231349, 16.568927, 294)), 0, 0, 0);
-
-
-        float dist1 = instance.transform.getTranslation(new Vector3()).len();
-        float dist2 = poi1.getPosition().len();
-        float dist3 = poi2.getPosition().len();
-        float dist4 = poi3.getPosition().len();
-        float dist5 = poi4.getPosition().len();
-
-//        earth.setPersonPosition(49.226983, 16.595691, 229.0);
-//        model = modelBuilder.createBox(13.21f, 15f, 11.0f,
-//                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-//                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-//        instance = new ModelInstance(model);
-//
-//        Poi poi1 = new Poi();
-//        Poi poi2 = new Poi();
-//        Poi poi3 = new Poi();
-//        earth.add(instance, 49.227230, 16.596217, 227.5); //kostol
-//        earth.add(poi2, 49.227255, 16.596327, 248.0); //spic kostola
-//        earth.add(poi3, 49.227578, 16.595865, 221.0); //obelisk
-//        float dist1 = instance.transform.getTranslation(new Vector3()).len();
-//        float dist2 = poi2.getPosition().len();
-//        float dist3 = poi3.getPosition().len();
-//
-//        //TODO cesta
-
-
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
@@ -221,8 +205,16 @@ public class MyGdxGame extends ApplicationAdapter {
 		cam.rotate(cameraRotationMatrix.set(sensorManager.getRotationMatrix()));
 		cam.rotate(angle + sensorManager.getCorrection(), 0,1,0);
         cam.update();
-        //outputLabel.setText(String.format(Locale.getDefault(), "%.2f°", sensorManager.getAzimuth()/* - 90.f*/));
-        outputLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f", personLocation.getLatitude(), personLocation.getLongitude(), personLocation.getAltitude()));
+
+        positionLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f",
+                personLocation.getLatitude(),
+                personLocation.getLongitude(),
+                personLocation.getAltitude()));
+
+        accuracyLabel.setText(String.format(Locale.getDefault(), "hAc: %.1f   vAc: %.1f",
+                personLocation.getVerticalAccuracy(),
+                personLocation.getHorizontalAccuracy()));
+
         earth.setPersonPosition(personLocation.getLatitude(), personLocation.getLongitude(), personLocation.getAltitude());
 
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -232,8 +224,9 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		decalBatch.add(decal);
 		decalBatch.flush();
-
+		
 		earth.render();
+
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
 	}

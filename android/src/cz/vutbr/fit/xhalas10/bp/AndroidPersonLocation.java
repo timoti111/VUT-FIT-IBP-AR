@@ -31,7 +31,7 @@ import cz.vutbr.fit.xhalas10.bp.utils.GeoidCalculator;
 public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
     static final int REQUEST_CHECK_SETTINGS = 8465;
-    private static final long UPDATE_INTERVAL = 1000, FASTEST_INTERVAL = 500; // = 5 seconds
+    private static final long UPDATE_INTERVAL = 1000, FASTEST_INTERVAL = 250; // = 5 seconds
     private static final float SMALLEST_DISPLACEMENT = 1.0f; // = 5 seconds
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     private GoogleApiClient googleApiClient;
@@ -44,6 +44,8 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     private double latitude;
     private double longitude;
     private double altitude;
+    private double hAccuracy;
+    private double vAccuracy;
 
     AndroidPersonLocation(Activity activity) {
         this.activity = activity;
@@ -67,13 +69,17 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
 
     private void updateLocation(Location location) {
         if (location != null) {
-            if (isBetterLocation(location, currentBestLocation)) {
+            //if (isBetterLocation(location, currentBestLocation)) {
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
                 if (location.hasAltitude())
                     altitude = location.getAltitude() - GeoidCalculator.getInstance().getHeightFromLatAndLon(latitude, longitude);
+                if (location.hasAccuracy())
+                    hAccuracy = location.getAccuracy();
+                if (location.hasVerticalAccuracy())
+                    vAccuracy = location.getVerticalAccuracyMeters();
                 currentBestLocation = location;
-            }
+            //}
         }
     }
 
@@ -97,6 +103,16 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     @Override
     public double getAltitude() {
         return altitude;
+    }
+
+    @Override
+    public double getHorizontalAccuracy() {
+        return hAccuracy;
+    }
+
+    @Override
+    public double getVerticalAccuracy() {
+        return vAccuracy;
     }
 
     /**
@@ -211,7 +227,7 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
 
     @SuppressLint("MissingPermission")
     void startLocationUpdates() {
-        if (!requestingLocationUpdates && checkPermissions()) {
+        if (!requestingLocationUpdates && checkPermissions() && locationRequest != null) {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
             requestingLocationUpdates = true;
         }

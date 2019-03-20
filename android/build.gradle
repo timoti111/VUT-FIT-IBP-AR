@@ -18,7 +18,7 @@ android {
     }
     defaultConfig {
         applicationId "cz.vutbr.fit.xhalas10.bp"
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"

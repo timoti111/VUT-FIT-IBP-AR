@@ -1,11 +1,11 @@
 package cz.vutbr.fit.xhalas10.bp;
 
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
-import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
@@ -17,28 +17,34 @@ public class Globe {
     private double radius;
     private DecalBatch decalBatch;
     private ModelBatch modelBatch;
+    private SpriteBatch spriteBatch;
     private PerspectiveCamera cam;
     private Environment environment;
-    protected ArrayList<Decal> decalArray = new ArrayList<Decal>();
-    protected ArrayList<ModelInstance> modelArray = new ArrayList<ModelInstance>();
-    protected ArrayList<GlobeObject> objectArray = new ArrayList<GlobeObject>();
+    private ArrayList<Poi> poiArray = new ArrayList<Poi>();
+    private ArrayList<ModelInstance> modelArray = new ArrayList<ModelInstance>();
+    private ArrayList<GlobeObject> objectArray = new ArrayList<GlobeObject>();
     private Matrix4 toLocalMatrix;
 
+    private double personLatitude;
+    private double personLongitude;
+    private double personAltitude;
 
-    public Globe(PerspectiveCamera cam, Environment environment) {
+
+    Globe(PerspectiveCamera cam, Environment environment) {
         radius = 0;
         decalBatch = new DecalBatch(new CameraGroupStrategy(cam));
         modelBatch = new ModelBatch();
+        spriteBatch = new SpriteBatch();
         this.cam = cam;
         this.environment = environment;
         toLocalMatrix = new Matrix4();
     }
 
-    public void add(Decal decal, double latitude, double longitude, double altitude) {
-        GlobeObject object = new GlobeObject(decal, latitude, longitude, altitude);
+    public void add(Poi poi, double latitude, double longitude, double altitude) {
+        GlobeObject object = new GlobeObject(poi, latitude, longitude, altitude);
         object.updateObject(toLocalMatrix);
         objectArray.add(object);
-        decalArray.add(decal);
+        poiArray.add(poi);
     }
 
     public void add(ModelInstance model, double latitude, double longitude, double altitude) {
@@ -59,10 +65,16 @@ public class Globe {
     }
 
     public void render() {
-        for (Decal decal : decalArray) {
-            decalBatch.add(decal);
+        for (Poi poi : poiArray) {
+            poi.renderDecal(decalBatch);
         }
         decalBatch.flush();
+
+        spriteBatch.begin();
+        for (Poi poi : poiArray) {
+            poi.renderText(spriteBatch);
+        }
+        spriteBatch.end();
 
         modelBatch.begin(cam);
         for (ModelInstance instance : modelArray) {
@@ -73,6 +85,14 @@ public class Globe {
 
     public void setPersonPosition(double latitude, double longitude, double altitude)
     {
+        if (latitude == personLatitude && longitude == personLongitude && altitude == personAltitude) {
+            return;
+        }
+
+        personLatitude = latitude;
+        personLongitude = longitude;
+        personAltitude = altitude;
+
         double perAlt = radius + altitude / scale;
 
         Matrix4 rotation = new Matrix4();
@@ -92,14 +112,12 @@ public class Globe {
         Vector3 worldPosition;
         Vector3 localPosition;
 
-        public GlobeObject(Decal decal, double latitude, double longitude, double altitude) {
-            object = decal;
-            decal.setWidth(3f);
-            decal.setHeight(3f);
+        GlobeObject(Poi poi, double latitude, double longitude, double altitude) {
+            object = poi;
             calculatePosition(latitude, longitude, altitude);
         }
 
-        public GlobeObject(ModelInstance modelInstance, double latitude, double longitude, double altitude) {
+        GlobeObject(ModelInstance modelInstance, double latitude, double longitude, double altitude) {
             object = modelInstance;
             calculatePosition(latitude, longitude, altitude);
         }
@@ -110,13 +128,13 @@ public class Globe {
             worldPosition.rotate((float)-longitude, 0.0f, 0.0f, 1.0f);
         }
 
-        public void updateObject(Matrix4 transform) {
+        void updateObject(Matrix4 transform) {
             localPosition = worldPosition.cpy();
             localPosition.mul(transform);
-            if (object instanceof Decal) {
-                Decal decal = (Decal)object;
-                decal.getPosition().set(localPosition);
-                decal.lookAt(cam.position, cam.up);
+            if (object instanceof Poi) {
+                Poi poi = (Poi)object;
+                poi.setPosition(localPosition);
+                poi.testUpdate();
             }
             else {
                 ModelInstance modelInstance = (ModelInstance)object;

@@ -4,4 +4,6 @@ public interface PersonLocation {
     double getLatitude();
     double getLongitude();
     double getAltitude();
+    double getVerticalAccuracy();
+    double getHorizontalAccuracy();
 }
