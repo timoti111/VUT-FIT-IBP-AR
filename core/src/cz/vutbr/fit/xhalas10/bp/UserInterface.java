@@ -176,14 +176,30 @@ public class UserInterface {
             }
         });
 
+        ImageTextButton downloadSurroundingData = createTextButton("Download Surrounding Data");
+        downloadSurroundingData.addListener(new InputListener() {
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                if (hideActor(mainMenu)) {
+                    myGdxGame.downloadSurroundingData();
+                }
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+
 
         Table table = new Table();
         table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        table.add(useCompass).size(Gdx.graphics.getWidth() / 3.0f, Gdx.graphics.getHeight() / 6.0f);
+        table.add(useCompass).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
         table.row().pad(Gdx.graphics.getHeight() / 15.0f);
 //        table.add(calibrateFromCompass).size(Gdx.graphics.getWidth() / 3.0f, Gdx.graphics.getHeight() / 6.0f);
 //        table.row();
-        table.add(calibrateCamera).size(Gdx.graphics.getWidth() / 3.0f, Gdx.graphics.getHeight() / 6.0f);
+        table.add(calibrateCamera).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
+        table.row().pad(Gdx.graphics.getHeight() / 15.0f);
+        table.add(downloadSurroundingData).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
         mainMenu.addActor(table);
 
         return mainMenu;

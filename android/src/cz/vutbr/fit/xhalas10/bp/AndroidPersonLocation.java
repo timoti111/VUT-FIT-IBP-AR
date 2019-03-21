@@ -31,8 +31,8 @@ import cz.vutbr.fit.xhalas10.bp.utils.GeoidCalculator;
 public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
     static final int REQUEST_CHECK_SETTINGS = 8465;
-    private static final long UPDATE_INTERVAL = 1000, FASTEST_INTERVAL = 250; // = 5 seconds
-    private static final float SMALLEST_DISPLACEMENT = 1.0f; // = 5 seconds
+    private static final long UPDATE_INTERVAL = 500, FASTEST_INTERVAL = 100; // = 5 seconds
+    private static final float SMALLEST_DISPLACEMENT = 0.5f; // = 5 seconds
     private static final int TWO_MINUTES = 1000 * 60 * 2;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;

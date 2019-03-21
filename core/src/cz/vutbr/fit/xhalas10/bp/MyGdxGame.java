@@ -30,6 +30,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.LatLng;
+
 import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
 
 import java.util.Locale;
@@ -59,6 +62,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
     private UserInterface userInterface;
     private PersonLocation personLocation;
+    private GeoApiContext context;
 	public MyGdxGame(SensorManager sensorManager, HardwareCamera hardwareCamera, PersonLocation personLocation) {
 		this.hardwareCamera = hardwareCamera;
 		this.sensorManager = sensorManager;
@@ -76,6 +80,13 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	@Override
 	public void create () {
+        context = new GeoApiContext.Builder()
+            .apiKey("AIzaSyBQaK3OYcPfdtMaVZUbzjVLfegmOOc7K-E")
+            .build();
+
+	    OSMData.getInstance().setGeoApiContext(context);
+        OSMData.getInstance().checkNodeElevations();
+
         stage = new Stage(new ScreenViewport());
         userInterface = new UserInterface(this);
         userInterface.setToStage();
@@ -110,7 +121,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double)hardwareCamera.getCameraFocalLength())));
 		cam = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		cam.near = 0.01f;
-		cam.far = 3000f;
+		cam.far = 500f;
 		cam.update();
 
         Texture texture = new Texture(Gdx.files.internal("compass_grey2icent.png"));
@@ -127,36 +138,35 @@ public class MyGdxGame extends ApplicationAdapter {
 		earth = new Globe(cam, environment);
 
         earth.setRadius(6378100);
-        model = modelBuilder.createBox(4.9f, 3.0f, 3.2f,
-                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        earth.add(OSMData.getInstance().getOSMNodes());
 
-        instance = new ModelInstance(model);
-
-
-        earth.setPersonPosition(49.231514, 16.569558, 308.0);
-        Poi poi1 = new Poi("Chatka 1", cam);
-        Poi poi2 = new Poi("Chatka 2", cam);
-        Poi poi3 = new Poi("Chatka 3", cam);
-        Poi poi4 = new Poi("Chatka 4", cam);
-
-        Poi kopecBazenik = new Poi("Velký kopec", cam);
-        Poi budkaZaA02 = new Poi("Búdka", cam);
-        Poi krizovatkaNaKopci = new Poi("Križovatka", cam);
-        Poi budkaPodKopcom = new Poi("Rozvodňa", cam);
-        Poi vchodA05 = new Poi("Vchod A05", cam);
-        Poi vchodA02 = new Poi("Vchod A02", cam);
-        earth.add(instance, 49.230795, 16.568154, 311.0);
-        earth.add(poi1, 49.231114, 16.568264, 311.0);
-        earth.add(poi2, 49.231254, 16.568456, 307.0);
-        earth.add(poi3, 49.230565, 16.568028, 312.0);
-        earth.add(poi4, 49.230735, 16.568519, 303.0);
-        earth.add(kopecBazenik, 49.234399, 16.567903, 336.0);
-        earth.add(budkaZaA02, 49.232329, 16.569171, 286.0);
-        earth.add(krizovatkaNaKopci, 49.233315, 16.567080, 315.0);
-        earth.add(budkaPodKopcom, 49.235859, 16.568215, 310.0);
-        earth.add(vchodA05, 49.231937, 16.570472, 280.0);
-        earth.add(vchodA02, 49.231666, 16.570102, 284.0);
+//        model = modelBuilder.createBox(4.9f, 3.0f, 3.2f,
+//                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
+//                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+//
+//        instance = new ModelInstance(model);
+//        Poi poi1 = new Poi("Chatka 1", cam);
+//        Poi poi2 = new Poi("Chatka 2", cam);
+//        Poi poi3 = new Poi("Chatka 3", cam);
+//        Poi poi4 = new Poi("Chatka 4", cam);
+//
+//        Poi kopecBazenik = new Poi("Velký kopec", cam);
+//        Poi budkaZaA02 = new Poi("Búdka", cam);
+//        Poi krizovatkaNaKopci = new Poi("Križovatka", cam);
+//        Poi budkaPodKopcom = new Poi("Rozvodňa", cam);
+//        Poi vchodA05 = new Poi("Vchod A05", cam);
+//        Poi vchodA02 = new Poi("Vchod A02", cam);
+//        earth.add(instance, 49.230795, 16.568154, 311.0);
+//        earth.add(poi1, 49.231114, 16.568264, 311.0);
+//        earth.add(poi2, 49.231254, 16.568456, 307.0);
+//        earth.add(poi3, 49.230565, 16.568028, 312.0);
+//        earth.add(poi4, 49.230735, 16.568519, 303.0);
+//        earth.add(kopecBazenik, 49.234399, 16.567903, 336.0);
+//        earth.add(budkaZaA02, 49.232329, 16.569171, 286.0);
+//        earth.add(krizovatkaNaKopci, 49.233315, 16.567080, 315.0);
+//        earth.add(budkaPodKopcom, 49.235859, 16.568215, 310.0);
+//        earth.add(vchodA05, 49.231937, 16.570472, 280.0);
+//        earth.add(vchodA02, 49.231666, 16.570102, 284.0);
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
@@ -196,6 +206,8 @@ public class MyGdxGame extends ApplicationAdapter {
             }
         });
         Gdx.input.setInputProcessor(multiplexer);
+
+        //earth.add(Route.createRoute(new Vector3(0,-5,0), new Vector3(0,-5,-150)), 49.231482, 16.569582, 310);
 	}
 
 	@Override
@@ -211,7 +223,8 @@ public class MyGdxGame extends ApplicationAdapter {
                 personLocation.getLongitude(),
                 personLocation.getAltitude()));
 
-        accuracyLabel.setText(String.format(Locale.getDefault(), "hAc: %.1f   vAc: %.1f",
+        accuracyLabel.setText(String.format(Locale.getDefault(), "Nodes: %d   hAc: %.1f   vAc: %.1f",
+                OSMData.getInstance().getOSMNodes().size(),
                 personLocation.getVerticalAccuracy(),
                 personLocation.getHorizontalAccuracy()));
 
@@ -224,7 +237,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		decalBatch.add(decal);
 		decalBatch.flush();
-		
+
 		earth.render();
 
         stage.act(Gdx.graphics.getDeltaTime());
@@ -236,4 +249,8 @@ public class MyGdxGame extends ApplicationAdapter {
 		model.dispose();
 		hardwareCamera.destroy();
 	}
+
+	public void downloadSurroundingData() {
+        OSMData.getInstance().getSurroundingData(new LatLng(personLocation.getLatitude(), personLocation.getLongitude()), 0.005);
+    }
 }

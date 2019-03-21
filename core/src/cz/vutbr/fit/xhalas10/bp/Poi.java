@@ -33,18 +33,35 @@ public class Poi {
     private Camera camera;
     private Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
     private BitmapFont font = FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", FONT_SIZE);
+    private OSMNode osmNode;
 
-    public Poi(String text, Camera camera) {
-        super();
+    public Poi(OSMNode osmNode, Camera camera) {
         this.camera = camera;
+        this.osmNode = osmNode;
+
         Texture texture = new Texture(Gdx.files.internal("poi.png"));
         TextureRegion textureRegion = new TextureRegion(texture);
         poi = Decal.newDecal(textureRegion);
         poi.setBlending(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA);
         poi.setColor(1, 1, 1, 1);
         bitmapFontCache = new BitmapFontCache(font);
-        bitmapFontCache.setText(text, -200.0f, FONT_SIZE / 2.0f, 400, Align.center, false);
+        bitmapFontCache.setText(osmNode.getName(), -200.0f, FONT_SIZE / 2.0f, 400, Align.center, false);
     }
+
+    public OSMNode getOSMNode() {
+        return osmNode;
+    }
+
+    //    public Poi(String text, Camera camera) {
+//        this.camera = camera;
+//        Texture texture = new Texture(Gdx.files.internal("poi.png"));
+//        TextureRegion textureRegion = new TextureRegion(texture);
+//        poi = Decal.newDecal(textureRegion);
+//        poi.setBlending(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA);
+//        poi.setColor(1, 1, 1, 1);
+//        bitmapFontCache = new BitmapFontCache(font);
+//        bitmapFontCache.setText(text, -200.0f, FONT_SIZE / 2.0f, 400, Align.center, false);
+//    }
 
     public void testUpdate() {
         float size = poi.getPosition().len();

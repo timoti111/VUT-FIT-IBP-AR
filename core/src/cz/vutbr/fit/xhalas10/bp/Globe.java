@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class Globe {
     private double scale = 1;
@@ -45,6 +46,13 @@ public class Globe {
         object.updateObject(toLocalMatrix);
         objectArray.add(object);
         poiArray.add(poi);
+    }
+
+    public void add(Collection<OSMNode> nodes) {
+        for (OSMNode node : nodes) {
+            if (node.hasElevation())
+                this.add(new Poi(node, cam), node.getLocation().lat, node.getLocation().lng, node.getElevation());
+        }
     }
 
     public void add(ModelInstance model, double latitude, double longitude, double altitude) {
