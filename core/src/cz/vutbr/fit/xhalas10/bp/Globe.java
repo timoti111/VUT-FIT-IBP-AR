@@ -55,6 +55,12 @@ public class Globe {
         }
     }
 
+    public void set(Collection<OSMNode> nodes) {
+        poiArray.clear();
+        objectArray.clear();
+        add(nodes);
+    }
+
     public void add(ModelInstance model, double latitude, double longitude, double altitude) {
         GlobeObject object = new GlobeObject(model, latitude, longitude, altitude);
         object.updateObject(toLocalMatrix);

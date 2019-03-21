@@ -138,7 +138,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		earth = new Globe(cam, environment);
 
         earth.setRadius(6378100);
-        earth.add(OSMData.getInstance().getOSMNodes());
+        earth.set(OSMData.getInstance().getOSMNodes());
 
 //        model = modelBuilder.createBox(4.9f, 3.0f, 3.2f,
 //                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
@@ -252,5 +252,6 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void downloadSurroundingData() {
         OSMData.getInstance().getSurroundingData(new LatLng(personLocation.getLatitude(), personLocation.getLongitude()), 0.005);
+        earth.set(OSMData.getInstance().getOSMNodes());
     }
 }
