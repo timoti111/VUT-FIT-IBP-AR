@@ -85,7 +85,7 @@ public class MyGdxGame extends ApplicationAdapter {
             .build();
 
 	    OSMData.getInstance().setGeoApiContext(context);
-        OSMData.getInstance().checkNodeElevations();
+        //OSMData.getInstance().checkNodeElevations();
 
         stage = new Stage(new ScreenViewport());
         userInterface = new UserInterface(this);
@@ -138,7 +138,7 @@ public class MyGdxGame extends ApplicationAdapter {
 		earth = new Globe(cam, environment);
 
         earth.setRadius(6378100);
-        earth.set(OSMData.getInstance().getOSMNodes());
+        //earth.set(OSMData.getInstance().getOSMNodes());
 
 //        model = modelBuilder.createBox(4.9f, 3.0f, 3.2f,
 //                new Material(ColorAttribute.createDiffuse(Color.GREEN)),

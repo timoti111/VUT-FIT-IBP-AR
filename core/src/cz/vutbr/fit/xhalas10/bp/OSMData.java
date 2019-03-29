@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 
-import cz.vutbr.fit.xhalas10.bp.utils.OSMWrapperAPI;
+import cz.vutbr.fit.xhalas10.bp.osm.OSMWrapperAPI;
 
 public class OSMData {
     private HashMap<LatLng, OSMNode> nodes;

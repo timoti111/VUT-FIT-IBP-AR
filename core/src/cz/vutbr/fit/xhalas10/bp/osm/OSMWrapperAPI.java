@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp.utils;
+package cz.vutbr.fit.xhalas10.bp.osm;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

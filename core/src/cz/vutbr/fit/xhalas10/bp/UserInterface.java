@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -14,9 +15,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
+import cz.vutbr.fit.xhalas10.bp.utils.GeoidCalculator;
 
 import java.util.ArrayList;
 
@@ -27,14 +32,13 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 
 public class UserInterface {
     final private float animationSpeed = 0.3f;
-    final private int fontSize = 50;
     private Stage stage;
     private ArrayList<Actor> actors = new ArrayList<Actor>();
     private Group mainMenu;
     private ImageButton settingsButton;
     private MyGdxGame myGdxGame;
     private SensorManager sensorManager;
-    private ImageTextButton calibrationDoneButton;
+    private TextButton calibrationDoneButton;
 
     public UserInterface(final MyGdxGame myGdxGame) {
         this.stage = myGdxGame.stage;
@@ -63,6 +67,9 @@ public class UserInterface {
         actors.add(createSettingsButton());
         actors.add(calibrationDoneButton);
         actors.add(createMainMenu());
+
+
+
 
     }
 
@@ -134,7 +141,7 @@ public class UserInterface {
 
         mainMenu.addActor(background);
 
-        final ImageTextButton calibrateFromCompass = createTextButton("Calibrate from compass");
+        final TextButton calibrateFromCompass = createTextButton("Calibrate from compass");
         calibrateFromCompass.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -146,7 +153,7 @@ public class UserInterface {
             }
         });
 
-        final CheckBox useCompass = createCheckBox("Use Compass (not good indoors)");
+        final CheckBox useCompass = new CheckBox("Use Compass (not good indoors)", MySkin.getInstance());
         useCompass.getImageCell().size(100, 100);
         useCompass.addListener(new InputListener() {
             @Override
@@ -161,7 +168,7 @@ public class UserInterface {
             }
         });
 
-        ImageTextButton calibrateCamera = createTextButton("Calibrate camera");
+        TextButton calibrateCamera = createTextButton("Calibrate camera");
         calibrateCamera.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -176,7 +183,7 @@ public class UserInterface {
             }
         });
 
-        ImageTextButton downloadSurroundingData = createTextButton("Download Surrounding Data");
+        TextButton downloadSurroundingData = createTextButton("Download Surrounding Data");
         downloadSurroundingData.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
@@ -205,46 +212,10 @@ public class UserInterface {
         return mainMenu;
     }
 
-    private ImageTextButton createTextButton(String text) {
-        Texture upTexture = generateColorTexture(Color.LIGHT_GRAY);
-        upTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-
-        Texture downTexture = generateColorTexture(Color.DARK_GRAY);
-        downTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-
-        ImageTextButton.ImageTextButtonStyle style = new ImageTextButton.ImageTextButtonStyle(new TextureRegionDrawable(new TextureRegion(upTexture)), new TextureRegionDrawable(new TextureRegion(downTexture)), null, FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", fontSize));
-        ImageTextButton button = new ImageTextButton(text, style);
-
+    private TextButton createTextButton(String text) {
+        TextButton button = new TextButton(text, MySkin.getInstance());
         button.setSize(Gdx.graphics.getWidth() / 3.0f, Gdx.graphics.getHeight() / 3.0f);
         return button;
-    }
-
-    private CheckBox createCheckBox(String text) {
-        Texture upTexture = new Texture(Gdx.files.internal("blank-check-box.png"));
-//        Texture upTexture = generateColorTexture(Color.LIGHT_GRAY);
-//        upTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-        TextureRegionDrawable upDrawable = new TextureRegionDrawable(new TextureRegion(upTexture));
-        upDrawable.setBottomHeight(50);
-        upDrawable.setLeftWidth(50);
-        upDrawable.setMinHeight(50);
-        upDrawable.setMinWidth(50);
-        upDrawable.setRightWidth(50);
-        upDrawable.setTopHeight(50);
-
-
-        Texture downTexture = new Texture(Gdx.files.internal("check-box.png"));
-//        Texture downTexture = generateColorTexture(Color.BLUE);
-//        downTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-        TextureRegionDrawable downDrawable = new TextureRegionDrawable(new TextureRegion(downTexture));
-        downDrawable.setBottomHeight(50);
-        downDrawable.setLeftWidth(50);
-        downDrawable.setMinHeight(50);
-        downDrawable.setMinWidth(50);
-        downDrawable.setRightWidth(50);
-        downDrawable.setTopHeight(50);
-
-        CheckBox.CheckBoxStyle style = new CheckBox.CheckBoxStyle(upDrawable, downDrawable, FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", fontSize), Color.LIGHT_GRAY);
-        return new CheckBox(text, style);
     }
 
     public void setToStage() {
@@ -255,8 +226,63 @@ public class UserInterface {
 
     public Texture generateColorTexture(Color color) {
         Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pix.setColor(color.r, color.g, color.b, color.a); // DE is red, AD is green and BE is blue.
+        pix.setColor(color.r, color.g, color.b, color.a);
         pix.fill();
         return new Texture(pix);
+    }
+}
+
+
+class MySkin extends Skin {
+    private final int fontSize = 50;
+    private Color fontColor = Color.WHITE;
+    private Color up = Color.LIGHT_GRAY;
+    private Color down = Color.DARK_GRAY;
+    private Color disabled = Color.GRAY;
+
+    private static final MySkin ourInstance = new MySkin();
+    public static MySkin getInstance() {
+        return ourInstance;
+    }
+    private MySkin() {
+        super();
+
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        this.add("white", new Texture(pixmap));
+        this.add("default", FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", this.fontSize));
+        this.add("checkedCheckbox", new Texture(Gdx.files.internal("check-box.png")));
+        this.add("uncheckedCheckbox", new Texture(Gdx.files.internal("blank-check-box.png")));
+
+        // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.up = this.newDrawable("white", this.up);
+        textButtonStyle.down = this.newDrawable("white", this.down);
+        textButtonStyle.font = this.getFont("default");
+        this.add("default", textButtonStyle);
+
+        CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle();
+        checkBoxStyle.checkboxOff = this.newDrawable("uncheckedCheckbox");
+        setDrawableSize(checkBoxStyle.checkboxOff);
+        checkBoxStyle.checkboxOn = this.newDrawable("checkedCheckbox");
+        setDrawableSize(checkBoxStyle.checkboxOn);
+        checkBoxStyle.checkboxOffDisabled = this.newDrawable("uncheckedCheckbox", this.disabled);
+        setDrawableSize(checkBoxStyle.checkboxOffDisabled);
+        checkBoxStyle.checkboxOnDisabled = this.newDrawable("checkedCheckbox", this.disabled);
+        setDrawableSize(checkBoxStyle.checkboxOnDisabled);
+        checkBoxStyle.fontColor = this.fontColor;
+        checkBoxStyle.disabledFontColor = this.fontColor.mul(this.disabled);
+        checkBoxStyle.font = this.getFont("default");
+        this.add("default", checkBoxStyle);
+    }
+
+    private void setDrawableSize(Drawable drawable) {
+        drawable.setBottomHeight(fontSize);
+        drawable.setLeftWidth(fontSize);
+        drawable.setMinHeight(fontSize);
+        drawable.setMinWidth(fontSize);
+        drawable.setRightWidth(fontSize);
+        drawable.setTopHeight(fontSize);
     }
 }
