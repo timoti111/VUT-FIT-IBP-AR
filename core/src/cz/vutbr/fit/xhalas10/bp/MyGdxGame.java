@@ -25,6 +25,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -129,11 +130,11 @@ public class MyGdxGame extends ApplicationAdapter {
         decal = Decal.newDecal(textureRegion, true);
         decal.setWidth(1.0f);
         decal.setHeight(1.0f);
-        decal.translate(0.0f, -1.5f, 0.0f);
+        decal.setPosition(0.0f, -1.5f, 0.0f);
         decal.lookAt(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
         decalBatch = new DecalBatch(new CameraGroupStrategy(cam));
 
-        ModelBuilder modelBuilder = new ModelBuilder();
+        //ModelBuilder modelBuilder = new ModelBuilder();
 
 		earth = new Globe(cam, environment);
 
@@ -207,15 +208,30 @@ public class MyGdxGame extends ApplicationAdapter {
         });
         Gdx.input.setInputProcessor(multiplexer);
 
+
+        ModelBuilder modelBuilder = new ModelBuilder();
+        model = modelBuilder.createBox(5f, 5f, 5f,
+                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+        instance = new ModelInstance(model);
+        instance.transform.setTranslation(0, 30, -30);
+
         //earth.add(Route.createRoute(new Vector3(0,-5,0), new Vector3(0,-5,-150)), 49.231482, 16.569582, 310);
 	}
 
 	@Override
 	public void render () {
+	    Vector3 testVector = new Vector3(0, -30, 30);
+	    testVector.nor();
 		cam.direction.set(0.0f, 0.0f, -1.0f);
-		cam.up.set(1.0f, 0.0f, 0.0f);
-		cam.rotate(cameraRotationMatrix.set(sensorManager.getRotationMatrix()));
-		cam.rotate(angle + sensorManager.getCorrection(), 0,1,0);
+		cam.up.set(0.0f, 1.0f, 0.0f);
+        Quaternion quat = new Quaternion();
+        quat.setFromCross(cam.up, testVector);
+		cam.rotate(sensorManager.getQuaternion());
+		cam.rotate(-90,1,0,0);
+		cam.rotate(angle - 90, 0,1,0);
+        //cam.rotate(quat);
+
         cam.update();
 
         positionLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f",
@@ -234,6 +250,11 @@ public class MyGdxGame extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		hardwareCamera.renderBackground();
+
+
+		modelBatch.begin(cam);
+        modelBatch.render(instance);
+        modelBatch.end();
 
 		decalBatch.add(decal);
 		decalBatch.flush();

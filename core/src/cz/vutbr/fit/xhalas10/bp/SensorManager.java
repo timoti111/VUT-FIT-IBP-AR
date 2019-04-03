@@ -1,11 +1,8 @@
 package cz.vutbr.fit.xhalas10.bp;
 
-import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 
 public interface SensorManager {
-    public Matrix4 getRotationMatrix();
-    public float getAzimuth();
-    public void reset();
-    public void useCompass(boolean useCompass);
-    public float getCorrection();
+    void useCompass(boolean useCompass);
+    Quaternion getQuaternion();
 }

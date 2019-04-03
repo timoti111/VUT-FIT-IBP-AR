@@ -141,18 +141,6 @@ public class UserInterface {
 
         mainMenu.addActor(background);
 
-        final TextButton calibrateFromCompass = createTextButton("Calibrate from compass");
-        calibrateFromCompass.addListener(new InputListener() {
-            @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                myGdxGame.setAngle(-(-sensorManager.getAzimuth() + 2.0f * 90.0f) - 90.0f);
-            }
-            @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-                return true;
-            }
-        });
-
         final CheckBox useCompass = new CheckBox("Use Compass (not good indoors)", MySkin.getInstance());
         useCompass.getImageCell().size(100, 100);
         useCompass.addListener(new InputListener() {
@@ -160,13 +148,14 @@ public class UserInterface {
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                 sensorManager.useCompass(useCompass.isChecked());
                 myGdxGame.setAngle(0);
-                calibrateFromCompass.setVisible(!useCompass.isChecked());
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
+        useCompass.setChecked(true);
+        sensorManager.useCompass(true);
 
         TextButton calibrateCamera = createTextButton("Calibrate camera");
         calibrateCamera.addListener(new InputListener() {
@@ -202,8 +191,6 @@ public class UserInterface {
         table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         table.add(useCompass).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
         table.row().pad(Gdx.graphics.getHeight() / 15.0f);
-//        table.add(calibrateFromCompass).size(Gdx.graphics.getWidth() / 3.0f, Gdx.graphics.getHeight() / 6.0f);
-//        table.row();
         table.add(calibrateCamera).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
         table.row().pad(Gdx.graphics.getHeight() / 15.0f);
         table.add(downloadSurroundingData).size(Gdx.graphics.getWidth() / 2.7f, Gdx.graphics.getHeight() / 6.0f);
