@@ -66,8 +66,11 @@ public class MyGdxGame extends ApplicationAdapter {
     private GeoApiContext context;
     private WorldManager worldManager;
     EarthCamera earthCamera;
+    private static final boolean showDebugInfo = false;
+    private Utils utils;
 
-	public MyGdxGame(SensorManager sensorManager, HardwareCamera hardwareCamera, PersonLocation personLocation) {
+	public MyGdxGame(Utils utils, SensorManager sensorManager, HardwareCamera hardwareCamera, PersonLocation personLocation) {
+	    this.utils = utils;
 		this.hardwareCamera = hardwareCamera;
 		this.sensorManager = sensorManager;
 		this.personLocation = personLocation;
@@ -103,14 +106,16 @@ public class MyGdxGame extends ApplicationAdapter {
         positionLabel.setPosition(0, 0);
         positionLabel.setAlignment(Align.center);
         positionLabel.toBack();
-        stage.addActor(positionLabel);
 
         accuracyLabel = new Label("Press a Button", style);
         accuracyLabel.setSize(Gdx.graphics.getWidth(), 60);
         accuracyLabel.setPosition(0, 60);
         accuracyLabel.setAlignment(Align.center);
         accuracyLabel.toBack();
-        stage.addActor(accuracyLabel);
+        if (showDebugInfo) {
+            stage.addActor(positionLabel);
+            stage.addActor(accuracyLabel);
+        }
 
         Gdx.graphics.setContinuousRendering(false);
 
@@ -222,7 +227,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
         for (OSMNode node : OSMData.getInstance().getOSMNodes()) {
             if (node.hasElevation())
-                worldManager.addWorldObject(new Poi(node.getName(), node.getLocation().lat, node.getLocation().lng, node.getElevation()));
+                worldManager.addWorldObject(Poi.newBasicPoi(node.getName(), node.getLocation().lat, node.getLocation().lng, node.getElevation()));
         }
 	}
 
@@ -254,7 +259,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	}
 
 	public void downloadSurroundingData() {
-        OSMData.getInstance().getSurroundingData(new LatLng(personLocation.getLatitude(), personLocation.getLongitude()), 0.005);
+        utils.showToast("Surrounding data downloaded");
+       // OSMData.getInstance().getSurroundingData(new LatLng(personLocation.getLatitude(), personLocation.getLongitude()), 0.005);
         //earth.set(OSMData.getInstance().getOSMNodes());
     }
 

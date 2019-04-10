@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.widget.Toast;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -28,6 +29,7 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
     AndroidSensorManager androidSensorManager;
     AndroidHardwareCamera androidHardwareCamera;
     AndroidPersonLocation androidLocation;
+    AndroidUtils androidUtils;
     private ArrayList<String> permissions = new ArrayList<>();
 
     @Override
@@ -68,7 +70,8 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
         androidSensorManager = new AndroidSensorManager(sensorManager);
         androidHardwareCamera = new AndroidHardwareCamera(cameraManager);
         androidLocation = new AndroidPersonLocation(this);
-        initialize(new MyGdxGame(androidSensorManager, androidHardwareCamera, androidLocation), config);
+        androidUtils = new AndroidUtils(this);
+        initialize(new MyGdxGame(androidUtils, androidSensorManager, androidHardwareCamera, androidLocation), config);
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {

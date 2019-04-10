@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
+import cz.vutbr.fit.xhalas10.bp.MySkin;
 import cz.vutbr.fit.xhalas10.bp.OSMData;
 import cz.vutbr.fit.xhalas10.bp.scene.IWorldDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
@@ -31,19 +32,26 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     ModelInstance modelInstance;
     private OSMData osmData;
 
-    public Poi(String text) {
+    static public Poi newBasicPoi(String text, double latitude, double longitude, double altitude) {
+        Texture texture = MySkin.getInstance().get("basicPoi", Texture.class);
+        Poi poi = new Poi(text, texture, latitude, longitude, altitude);
+        poi.setPosition(latitude, longitude, altitude);
+        return poi;
+    }
+
+    public Poi(String text, Texture texture) {
         modelInstance = new ModelInstance(model);
         Texture textTexture = TextureTextGenerator.generateTexture(text, 50);
-        Texture poiTexture = new Texture(Gdx.files.internal("poi_res.png"));
-        modelInstance.getMaterial("TextureHolder").set(TextureAttribute.createDiffuse(poiTexture));
+        modelInstance.getMaterial("TextureHolder").set(TextureAttribute.createDiffuse(texture));
         modelInstance.getMaterial("TextHolder").set(TextureAttribute.createDiffuse(textTexture));
-        modelInstance.getNode("poi").scale.set((float) poiTexture.getWidth() / (float) poiTexture.getHeight(), 1.0f, 1.0f);
+        modelInstance.getNode("poi").scale.set((float) texture.getWidth() / (float) texture.getHeight(), 1.0f, 1.0f);
         modelInstance.getNode("text").scale.set((float) textTexture.getWidth() / (float) textTexture.getHeight(), 1.0f, 1.0f);
         modelInstance.calculateTransforms();
     }
-    public Poi(String text, double latitude, double longitude, double altitude) {
-        this(text);
-        this.setPosition(latitude, longitude, altitude);
+
+    public Poi(String text, Texture texture, double latitude, double longitude, double altitude) {
+        this(text, texture);
+        setPosition(latitude, longitude, altitude);
     }
 
     private static Model buildPoiModel() {
