@@ -10,9 +10,9 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -21,11 +21,9 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.decals.CameraGroupStrategy;
 import com.badlogic.gdx.graphics.g3d.decals.Decal;
 import com.badlogic.gdx.graphics.g3d.decals.DecalBatch;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -34,12 +32,15 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.LatLng;
 
-import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
+import cz.vutbr.fit.xhalas10.bp.earth.Compass;
+import cz.vutbr.fit.xhalas10.bp.earth.EarthCamera;
+import cz.vutbr.fit.xhalas10.bp.earth.Poi;
+import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
+import cz.vutbr.fit.xhalas10.bp.utils.Location;
 
 import java.util.Locale;
 
 public class MyGdxGame extends ApplicationAdapter {
-	private Environment environment;
 	private PerspectiveCamera cam;
 	private ModelBatch modelBatch;
 	private Model model;
@@ -50,7 +51,6 @@ public class MyGdxGame extends ApplicationAdapter {
     private Decal decal;
     private DecalBatch decalBatch;
     public SensorManager sensorManager;
-    private Globe earth;
     private float angle = 0;
     private final double TOUCH_SCALE_FACTOR = 63.0 / 1920.0;
     public Stage stage;
@@ -58,12 +58,15 @@ public class MyGdxGame extends ApplicationAdapter {
     private Label accuracyLabel;
     private boolean canRotateCamera = false;
     private SpriteBatch spriteBatch;
-
-    private Poi testPoi;
+    private Poi poiTest;
+    private Sprite testSprite;
 
     private UserInterface userInterface;
     private PersonLocation personLocation;
     private GeoApiContext context;
+    private WorldManager worldManager;
+    EarthCamera earthCamera;
+
 	public MyGdxGame(SensorManager sensorManager, HardwareCamera hardwareCamera, PersonLocation personLocation) {
 		this.hardwareCamera = hardwareCamera;
 		this.sensorManager = sensorManager;
@@ -93,7 +96,7 @@ public class MyGdxGame extends ApplicationAdapter {
         userInterface.setToStage();
         spriteBatch = new SpriteBatch();
 
-        BitmapFont font = FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", 50);
+        BitmapFont font = MySkin.getInstance().getFont("default");
         Label.LabelStyle style = new Label.LabelStyle(font, Color.GREEN);
         positionLabel = new Label("Press a Button", style);
         positionLabel.setSize(Gdx.graphics.getWidth(), 60);
@@ -111,10 +114,6 @@ public class MyGdxGame extends ApplicationAdapter {
 
         Gdx.graphics.setContinuousRendering(false);
 
-		environment = new Environment();
-		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-		environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-
         hardwareCamera.init();
 		modelBatch = new ModelBatch();
 
@@ -124,6 +123,9 @@ public class MyGdxGame extends ApplicationAdapter {
 		cam.near = 0.01f;
 		cam.far = 500f;
 		cam.update();
+        worldManager = WorldManager.getInstance();
+        earthCamera = new EarthCamera(cam);
+        worldManager.setWorldCamera(earthCamera);
 
         Texture texture = new Texture(Gdx.files.internal("compass_grey2icent.png"));
         TextureRegion textureRegion = new TextureRegion(texture);
@@ -134,34 +136,35 @@ public class MyGdxGame extends ApplicationAdapter {
         decal.lookAt(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
         decalBatch = new DecalBatch(new CameraGroupStrategy(cam));
 
-        //ModelBuilder modelBuilder = new ModelBuilder();
-
-		earth = new Globe(cam, environment);
-
-        earth.setRadius(6378100);
-        //earth.set(OSMData.getInstance().getOSMNodes());
-
-//        model = modelBuilder.createBox(4.9f, 3.0f, 3.2f,
-//                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-//                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-//
+        Location location = new Location(49.230795, 16.568154, 311.0);
+        Vector3 up = location.getUpPointingVector();
+        Vector3 north = location.getNorthPointingVector().scl(-1);
+        Vector3 east = location.getEastPointingVector();
+        Matrix4 mat = new Matrix4();
+        mat.set(east.cpy(), up, north.cpy(), Vector3.Zero);
+        Vector3 upTra = new Vector3(Vector3.Y);
+        Vector3 northTra = new Vector3(Vector3.Z);
+        Vector3 eastTra = new Vector3(Vector3.X);
+        up.mul(mat);
+        north.mul(mat);
+        east.mul(mat);
+        //
 //        instance = new ModelInstance(model);
 //        Poi poi1 = new Poi("Chatka 1", cam);
 //        Poi poi2 = new Poi("Chatka 2", cam);
 //        Poi poi3 = new Poi("Chatka 3", cam);
-//        Poi poi4 = new Poi("Chatka 4", cam);
-//
+//        Poi poi4 = new Poi("Chatka 4", cam);//
+//        earth.add(instance, 49.230795, 16.568154, 311.0);
+//        earth.add(poi1, 49.231114, 16.568264, 311.0);
+//        earth.add(poi2, 49.231254, 16.568456, 307.0);
+//        earth.add(poi3, 49.230565, 16.568028, 312.0);
+//        earth.add(poi4, 49.230735, 16.568519, 303.0);
 //        Poi kopecBazenik = new Poi("Velký kopec", cam);
 //        Poi budkaZaA02 = new Poi("Búdka", cam);
 //        Poi krizovatkaNaKopci = new Poi("Križovatka", cam);
 //        Poi budkaPodKopcom = new Poi("Rozvodňa", cam);
 //        Poi vchodA05 = new Poi("Vchod A05", cam);
 //        Poi vchodA02 = new Poi("Vchod A02", cam);
-//        earth.add(instance, 49.230795, 16.568154, 311.0);
-//        earth.add(poi1, 49.231114, 16.568264, 311.0);
-//        earth.add(poi2, 49.231254, 16.568456, 307.0);
-//        earth.add(poi3, 49.230565, 16.568028, 312.0);
-//        earth.add(poi4, 49.230735, 16.568519, 303.0);
 //        earth.add(kopecBazenik, 49.234399, 16.567903, 336.0);
 //        earth.add(budkaZaA02, 49.232329, 16.569171, 286.0);
 //        earth.add(krizovatkaNaKopci, 49.233315, 16.567080, 315.0);
@@ -213,53 +216,32 @@ public class MyGdxGame extends ApplicationAdapter {
         model = modelBuilder.createBox(5f, 5f, 5f,
                 new Material(ColorAttribute.createDiffuse(Color.GREEN)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
-        instance = new ModelInstance(model);
-        instance.transform.setTranslation(0, 30, -30);
 
-        //earth.add(Route.createRoute(new Vector3(0,-5,0), new Vector3(0,-5,-150)), 49.231482, 16.569582, 310);
+        Compass compass = new Compass(cam);
+        worldManager.addWorldObject(compass);
+
+        for (OSMNode node : OSMData.getInstance().getOSMNodes()) {
+            if (node.hasElevation())
+                worldManager.addWorldObject(new Poi(node.getName(), node.getLocation().lat, node.getLocation().lng, node.getElevation()));
+        }
 	}
 
 	@Override
 	public void render () {
-	    Vector3 testVector = new Vector3(0, -30, 30);
-	    testVector.nor();
-		cam.direction.set(0.0f, 0.0f, -1.0f);
-		cam.up.set(0.0f, 1.0f, 0.0f);
-        Quaternion quat = new Quaternion();
-        quat.setFromCross(cam.up, testVector);
-		cam.rotate(sensorManager.getQuaternion());
-		cam.rotate(-90,1,0,0);
-		cam.rotate(angle - 90, 0,1,0);
-        //cam.rotate(quat);
-
-        cam.update();
-
-        positionLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f",
-                personLocation.getLatitude(),
-                personLocation.getLongitude(),
-                personLocation.getAltitude()));
-
-        accuracyLabel.setText(String.format(Locale.getDefault(), "Nodes: %d   hAc: %.1f   vAc: %.1f",
-                OSMData.getInstance().getOSMNodes().size(),
-                personLocation.getVerticalAccuracy(),
-                personLocation.getHorizontalAccuracy()));
-
-        earth.setPersonPosition(personLocation.getLatitude(), personLocation.getLongitude(), personLocation.getAltitude());
-
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
+        cam.direction.set(0.0f, 0.0f, -1.0f);
+        cam.up.set(0.0f, 1.0f, 0.0f);
+        cam.rotate(sensorManager.getQuaternion());
+        cam.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
+        cam.rotate(angle - 90.0f, 0.0f, 1.0f, 0.0f);
+        cam.update();
+
 		hardwareCamera.renderBackground();
 
-
-		modelBatch.begin(cam);
-        modelBatch.render(instance);
-        modelBatch.end();
-
-		decalBatch.add(decal);
-		decalBatch.flush();
-
-		earth.render();
+        updateLocation();
+        worldManager.renderWorld();
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
@@ -273,6 +255,23 @@ public class MyGdxGame extends ApplicationAdapter {
 
 	public void downloadSurroundingData() {
         OSMData.getInstance().getSurroundingData(new LatLng(personLocation.getLatitude(), personLocation.getLongitude()), 0.005);
-        earth.set(OSMData.getInstance().getOSMNodes());
+        //earth.set(OSMData.getInstance().getOSMNodes());
+    }
+
+    public void updateLocation() {
+	    if (!earthCamera.isSameLocation(personLocation.getLatitude(), personLocation.getLongitude(), personLocation.getAltitude())) {
+            earthCamera.setPosition(personLocation.getLatitude(), personLocation.getLongitude(), personLocation.getAltitude());
+            earthCamera.update();
+            worldManager.updateObjectsAndCache();
+            positionLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f",
+                    personLocation.getLatitude(),
+                    personLocation.getLongitude(),
+                    personLocation.getAltitude()));
+
+            accuracyLabel.setText(String.format(Locale.getDefault(), "Nodes: %d   hAc: %.1f   vAc: %.1f",
+                    OSMData.getInstance().getOSMNodes().size(),
+                    personLocation.getVerticalAccuracy(),
+                    personLocation.getHorizontalAccuracy()));
+        }
     }
 }

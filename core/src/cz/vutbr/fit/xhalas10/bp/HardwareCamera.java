@@ -7,7 +7,7 @@ public interface HardwareCamera {
 
     void destroy();
 
-    public float[] getCameraSensorSize();
+    float[] getCameraSensorSize();
 
-    public float getCameraFocalLength();
+    float getCameraFocalLength();
 }

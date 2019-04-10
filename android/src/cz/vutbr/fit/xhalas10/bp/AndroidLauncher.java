@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.google.android.gms.common.ConnectionResult;
@@ -19,7 +20,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class AndroidLauncher extends AndroidApplication implements ActivityCompat.OnRequestPermissionsResultCallback {
-    // integer for permissions results request
     private static final int ALL_PERMISSIONS_RESULT = 1011;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     SensorManager sensorManager;
@@ -47,20 +47,21 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
         if (permissionsToRequest.size() > 0) {
             requestPermissions(permissionsToRequest.toArray(new String[0]), ALL_PERMISSIONS_RESULT);
         }
-
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        config.useRotationVectorSensor = true;
-        config.useGyroscope = true;
+        config.useRotationVectorSensor = false;
+        config.useGyroscope = false;
         config.useAccelerometer = false;
-        config.sensorDelay = SensorManager.SENSOR_DELAY_FASTEST;
+        config.useCompass = false;
         config.useImmersiveMode = true;
         //config.useWakelock = true;
         config.disableAudio = true;
+        config.useGL30 = true;
+        config.useGLSurfaceView20API18 = true;
         config.r = 8;
         config.g = 8;
         config.b = 8;
         config.a = 8;
-        sensorManager = (SensorManager) this.getContext().getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) this.getContext().getSystemService(SENSOR_SERVICE); // own SensorManager
         cameraManager = (CameraManager) this.getContext().getSystemService(CAMERA_SERVICE);
         locationManager = (LocationManager) this.getContext().getSystemService(LOCATION_SERVICE);
 

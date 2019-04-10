@@ -36,9 +36,8 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
     @Override
     public void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
-        if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+        if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR)
             quaternion.set(event.values[1], -event.values[0], -event.values[2], -event.values[3]);
-        }
     }
 
     @Override
