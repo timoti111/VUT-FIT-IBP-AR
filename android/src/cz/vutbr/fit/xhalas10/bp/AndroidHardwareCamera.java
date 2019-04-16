@@ -290,7 +290,10 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
     }
 
     @Override
-    public void destroy() {
+    public void dispose() {
         closeCamera();
+        shader.dispose();
+        mesh.dispose();
+        Gdx.gl.glDeleteTexture(texture[0]);
     }
 }

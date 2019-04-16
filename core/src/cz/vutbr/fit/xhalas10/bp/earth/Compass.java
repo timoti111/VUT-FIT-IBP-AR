@@ -1,7 +1,6 @@
 package cz.vutbr.fit.xhalas10.bp.earth;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -12,20 +11,21 @@ import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
+import cz.vutbr.fit.xhalas10.bp.MySkin;
 import cz.vutbr.fit.xhalas10.bp.scene.IWorldDrawableObject;
+import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
 
 public class Compass extends EarthObject implements IWorldDrawableObject {
     private static final float size = 0.6f;
     private static Model model = buildPoiModel();
     private ModelInstance modelInstance;
-    private Camera camera;
-    public Compass(Camera camera) {
-        this.camera = camera;
+
+    public Compass() {
         modelInstance = new ModelInstance(model);
     }
 
     private static Model buildPoiModel() {
-        Texture texture = new Texture(Gdx.files.internal("compass_grey2icent.png"));
+        Texture texture = MySkin.getInstance().get("compass", Texture.class);
         Material material = new Material(TextureAttribute.createDiffuse(texture));
         material.set(new BlendingAttribute(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA));
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -45,11 +45,21 @@ public class Compass extends EarthObject implements IWorldDrawableObject {
 
     @Override
     public void update() {
-        modelInstance.transform.setTranslation(camera.position);
+        modelInstance.transform.setTranslation(WorldManager.getInstance().getWorldCamera().getCamera().position);
     }
 
     @Override
     public RenderableProvider getRenderableProvider() {
         return modelInstance;
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
+    @Override
+    public void dispose() {
+        model.dispose();
     }
 }

@@ -41,13 +41,11 @@ public class UserInterface {
     private Group legend;
     private ImageButton settingsButton;
     private MyGdxGame myGdxGame;
-    private SensorManager sensorManager;
     private ImageTextButton calibrationDoneButton;
     private HorizontalGroup calibrationSlider;
 
     public UserInterface(final MyGdxGame myGdxGame) {
         this.stage = myGdxGame.stage;
-        this.sensorManager = myGdxGame.sensorManager;
         this.myGdxGame = myGdxGame;
 
         actors.add(createCalibrationDoneButton());
@@ -98,6 +96,7 @@ public class UserInterface {
     private HorizontalGroup createHeightCalibrationSlider() {
         calibrationSlider = new HorizontalGroup();
         final Slider slider = new Slider(-15.0f, 15.0f, 0.5f, true, MySkin.getInstance());
+        slider.setValue(0.0f);
         Group group = new Group();
         group.addActor(slider);
         group.setHeight(Gdx.graphics.getHeight() / 2.0f);
@@ -110,6 +109,7 @@ public class UserInterface {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 label.setText(Float.toString(slider.getValue()) + "m");
+                myGdxGame.setCameraHeightOffset(slider.getValue());
             }
         });
 
@@ -185,7 +185,7 @@ public class UserInterface {
         useCompass.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                sensorManager.useCompass(useCompass.isChecked());
+                myGdxGame.useCompass(useCompass.isChecked());
                 myGdxGame.setAngle(0);
             }
             @Override
@@ -194,7 +194,7 @@ public class UserInterface {
             }
         });
         useCompass.setChecked(true);
-        sensorManager.useCompass(true);
+        myGdxGame.useCompass(true);
 
         ImageTextButton calibrateCamera = createImageTextButton("Calibrate camera");
         calibrateCamera.addListener(new InputListener() {
@@ -272,15 +272,15 @@ public class UserInterface {
         VerticalGroup verticalGroup = new VerticalGroup();
         verticalGroup.setWidth(Gdx.graphics.getWidth());
         verticalGroup.columnLeft();
-        HorizontalGroup horizontalGroup = new HorizontalGroup();
+        verticalGroup.addActor(createLegendItem("peak", "Peak"));
+        verticalGroup.addActor(createLegendItem("volcano", "Volcano"));
         verticalGroup.addActor(createLegendItem("viewPoint", "View Point"));
+        verticalGroup.addActor(createLegendItem("information", "Information Board"));
+        verticalGroup.addActor(createLegendItem("signPost", "Guide Post"));
         verticalGroup.addActor(createLegendItem("cave", "Cave"));
         verticalGroup.addActor(createLegendItem("cottage", "Cottage"));
         verticalGroup.addActor(createLegendItem("spring", "Spring"));
-        verticalGroup.addActor(createLegendItem("information", "Information Board"));
-        verticalGroup.addActor(createLegendItem("lake", "Lake"));
-        verticalGroup.addActor(createLegendItem("peak", "Peak"));
-        verticalGroup.addActor(createLegendItem("signPost", "Guide Post"));
+        verticalGroup.addActor(createLegendItem("rock", "Rock"));
         verticalGroup.addActor(createLegendItem("waterfalls", "Waterfalls"));
         verticalGroup.addActor(createLegendItem("basicPoi", "Other"));
 

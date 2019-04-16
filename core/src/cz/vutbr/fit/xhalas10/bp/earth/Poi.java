@@ -16,13 +16,13 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.MySkin;
-import cz.vutbr.fit.xhalas10.bp.OSMData;
+import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
 import cz.vutbr.fit.xhalas10.bp.scene.IWorldDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
 import cz.vutbr.fit.xhalas10.bp.utils.TextureTextGenerator;
 
 public class Poi extends EarthObject implements IWorldDrawableObject {
-    private static final float POI_HEIGHT_AT_1M = 0.05f;
+    private static final float POI_HEIGHT_AT_1M = 0.04f;
     private static final float FONT_HEIGHT_AT_1M = 0.02f;
     private static final Quaternion billboardQuaternion = new Quaternion();
     private static final Vector3 objToCam = new Vector3();
@@ -30,18 +30,92 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     private static final Vector3 scale = new Vector3();
     private static Model model = buildPoiModel();
     ModelInstance modelInstance;
+    Texture textTexture;
     private OSMData osmData;
+    private int priority = 0;
 
-    static public Poi newBasicPoi(String text, double latitude, double longitude, double altitude) {
+    public static Poi newBasicPoi(String text, double latitude, double longitude, double altitude) {
         Texture texture = MySkin.getInstance().get("basicPoi", Texture.class);
-        Poi poi = new Poi(text, texture, latitude, longitude, altitude);
-        poi.setPosition(latitude, longitude, altitude);
+        return new Poi(text, texture, latitude, longitude, altitude);
+    }
+
+
+    public static Poi fromOSMNode(cz.vutbr.fit.xhalas10.bp.osm.model.Node node) {
+        Poi poi;
+        String name = node.getTags().get("name");
+        Texture texture;
+
+        if (node.getTags().containsValue("viewpoint") || node.getTags().containsValue("peak")) {
+            texture = MySkin.getInstance().get(name == null ? "viewPoint" : "peak", Texture.class);
+            poi = new Poi(name == null ? "View Point" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(100);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("volcano")) {
+            texture = MySkin.getInstance().get("volcano", Texture.class);
+            poi = new Poi(name == null ? "Volcano" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(100);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("cave_entrance")) {
+            texture = MySkin.getInstance().get("cave", Texture.class);
+            poi = new Poi(name == null ? "Cave" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(50);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("waterfalls")) {
+            texture = MySkin.getInstance().get("waterfall", Texture.class);
+            poi = new Poi(name == null ? "Waterfall" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(50);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("spring") || node.getTags().containsValue("hot_spring")) {
+            texture = MySkin.getInstance().get("spring", Texture.class);
+            poi = new Poi(name == null ? "Spring" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(40);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("rock") || node.getTags().containsValue("stone")) {
+            texture = MySkin.getInstance().get("rock", Texture.class);
+            poi = new Poi(name == null ? "Rock" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(40);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("wilderness_hut") || node.getTags().containsValue("alpine_hut")) {
+            texture = MySkin.getInstance().get("cottage", Texture.class);
+            poi = new Poi(name == null ? "Hut" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(30);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("map") || node.getTags().containsValue("board")) {
+            texture = MySkin.getInstance().get("information", Texture.class);
+            poi = new Poi(name == null ? "Information Board" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(10);
+            return poi;
+        }
+
+        if (node.getTags().containsValue("guidepost")) {
+            texture = MySkin.getInstance().get("signPost", Texture.class);
+            poi = new Poi(name == null ? "Guide Post" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            poi.setPriority(10);
+            return poi;
+        }
+
+        texture = MySkin.getInstance().get("basicPoi", Texture.class);
+        poi = new Poi(name == null ? "Other" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
         return poi;
     }
 
     public Poi(String text, Texture texture) {
         modelInstance = new ModelInstance(model);
-        Texture textTexture = TextureTextGenerator.generateTexture(text, 50);
+        textTexture = TextureTextGenerator.generateTexture(text, 50);
         modelInstance.getMaterial("TextureHolder").set(TextureAttribute.createDiffuse(texture));
         modelInstance.getMaterial("TextHolder").set(TextureAttribute.createDiffuse(textTexture));
         modelInstance.getNode("poi").scale.set((float) texture.getWidth() / (float) texture.getHeight(), 1.0f, 1.0f);
@@ -76,7 +150,7 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
 
         node = modelBuilder.node();
         node.id = "text";
-        node.translation.add(0.0f, POI_HEIGHT_AT_1M + FONT_HEIGHT_AT_1M * 0.8f, 0.0f);
+        node.translation.add(0.0f, POI_HEIGHT_AT_1M + POI_HEIGHT_AT_1M * 0.25f, 0.0f);
         material = new Material("TextHolder");
         material.set(new BlendingAttribute(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA));
         meshBuilder = modelBuilder.part("text", Gdx.gl.GL_TRIANGLES,
@@ -98,6 +172,15 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
         return modelInstance;
     }
 
+    private void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+
     public void setPositionLookAtTarget(Vector3 target) {
         objToCam.set(target).sub(originRelativePosition);
         float size = objToCam.len();
@@ -110,5 +193,11 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     @Override
     public void update() {
         setPositionLookAtTarget(WorldManager.getInstance().getWorldCamera().getCamera().position);
+    }
+
+    @Override
+    public void dispose() {
+        textTexture.dispose();
+        model.dispose();
     }
 }

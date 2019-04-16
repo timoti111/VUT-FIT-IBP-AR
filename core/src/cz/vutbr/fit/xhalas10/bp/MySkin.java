@@ -37,11 +37,14 @@ public class MySkin extends Skin {
         this.add("cottage", new Texture(Gdx.files.internal("pois/cottage.png")));
         this.add("spring", new Texture(Gdx.files.internal("pois/drop.png")));
         this.add("information", new Texture(Gdx.files.internal("pois/information_board.png")));
-        this.add("lake", new Texture(Gdx.files.internal("pois/lake.png")));
         this.add("peak", new Texture(Gdx.files.internal("pois/peak.png")));
         this.add("signPost", new Texture(Gdx.files.internal("pois/sign_post.png")));
         this.add("waterfalls", new Texture(Gdx.files.internal("pois/waterfalls.png")));
+        this.add("volcano", new Texture(Gdx.files.internal("pois/volcano.png")));
+        this.add("rock", new Texture(Gdx.files.internal("pois/rock.png")));
+
         this.add("settings", new Texture(Gdx.files.internal("settings.png")));
+        this.add("compass", new Texture(Gdx.files.internal("compass_grey2icent.png")));
 
         this.add("button", new NinePatch(new Texture(Gdx.files.internal("button.png")), 100, 100, 100, 100));
         this.add("line", new NinePatch(new Texture(Gdx.files.internal("line.png")), 0, 0, 15, 15));

@@ -1,9 +1,9 @@
 package cz.vutbr.fit.xhalas10.bp;
 
+import cz.vutbr.fit.xhalas10.bp.utils.Location;
+
 public interface PersonLocation {
-    double getLatitude();
-    double getLongitude();
-    double getAltitude();
+    Location getLocation();
     double getVerticalAccuracy();
     double getHorizontalAccuracy();
 }

@@ -1,26 +1,31 @@
 package cz.vutbr.fit.xhalas10.bp.scene;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelCache;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.async.AsyncExecutor;
+import com.badlogic.gdx.utils.async.AsyncResult;
+import com.badlogic.gdx.utils.async.AsyncTask;
 
-import cz.vutbr.fit.xhalas10.bp.earth.Poi;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
-public class WorldManager {
+public class WorldManager implements Disposable {
     private IWorldCamera worldCamera;
-    private ModelCache modelCache;
+    private static ModelCache modelCache;
     private ModelBatch modelBatch;
     private Vector3d origin;
-    private Quaternion correctionQuaternion;
-    public static Matrix4 correctionMatrix;
-    private ObjectSet<IWorldDrawableObject> worldObjects;
-    private static final double MAXIMUM_CAMERA_DISTANCE = 1000.0f;
-    private static final Vector3 UP = new Vector3(0.0f, 1.0f, 0.0f);
-    private static final Vector3 NORTH = new Vector3(0.0f, 0.0f, 1.0f);
+    private Matrix4 correctionMatrix;
+    private Array<IWorldDrawableObject> unmanagedObjects;
+    private ObjectSet<IWorldDrawableObject> allObjects;
+    private Iterable<IWorldDrawableObject> objectsToDraw;
+    private WorldObjectFilter worldObjectFilter;
+
+    private static final double MAXIMUM_CAMERA_DISTANCE = 100.0f;
 
     private static WorldManager instance = new WorldManager();
 
@@ -32,42 +37,57 @@ public class WorldManager {
         modelCache = new ModelCache();
         modelBatch = new ModelBatch();
         origin = new Vector3d();
-        correctionQuaternion = new Quaternion();
         correctionMatrix = new Matrix4();
-        worldObjects = new ObjectSet<IWorldDrawableObject>();
+        unmanagedObjects = new Array<>();
+        allObjects = new ObjectSet<>();
+        worldObjectFilter = new WorldObjectFilter();
     }
 
     public Vector3d getOrigin() {
         return origin;
     }
 
-    public Quaternion getCorrectionQuaternion() {
-        return correctionQuaternion;
+    public Matrix4 getCorrectionMatrix() {
+        return correctionMatrix;
     }
 
     public void setWorldCamera(IWorldCamera worldCamera) {
         this.worldCamera = worldCamera;
     }
 
-    public void addWorldObject(IWorldDrawableObject worldObject) {
-        worldObjects.add(worldObject);
+    public void addWorldObject(IWorldDrawableObject worldObject, boolean managed) {
+        if(managed)
+            allObjects.add(worldObject);
+        else
+            unmanagedObjects.add(worldObject);
     }
 
-    public void addWorldObjects(Iterable<IWorldDrawableObject> worldObjects) {
-        for (IWorldDrawableObject worldObject : worldObjects) {
-            addWorldObject(worldObject);
-        }
+    public void addWorldObjects(Iterable<IWorldDrawableObject> worldObjects, boolean managed) {
+        worldObjects.forEach(worldObject -> addWorldObject(worldObject, managed));
+    }
+
+    public void clearManagedObjects() {
+        allObjects.forEach(Disposable::dispose);
+        allObjects.clear();
+    }
+
+    public void clearUnmanagedObjects() {
+        unmanagedObjects.forEach(Disposable::dispose);
+        unmanagedObjects.clear();
     }
 
     public void renderWorld() {
         update();
         modelBatch.begin(worldCamera.getCamera());
+
         modelBatch.render(modelCache);
+        for (IWorldDrawableObject drawableObject : unmanagedObjects) {
+            drawableObject.update();
+            modelBatch.render(drawableObject.getRenderableProvider());
+        }
+
         modelBatch.end();
     }
-
-    public static final Quaternion upCorrection = new Quaternion();
-    public static final Quaternion northCorrection = new Quaternion();
 
     private void update() {
         if (origin.dst(worldCamera.getWorldPosition()) > MAXIMUM_CAMERA_DISTANCE) {
@@ -75,33 +95,42 @@ public class WorldManager {
             correctionMatrix.set(worldCamera.getEastVector(), worldCamera.getUpVector(), worldCamera.getNorthVector().scl(-1.0f), Vector3.Zero);
             setWorldOrigin();
         }
+        worldCamera.update();
     }
 
     public void updateObjectsAndCache() {
-        modelCache.begin();
-        for (IWorldDrawableObject worldObject : worldObjects) {
-            worldObject.update();
-            modelCache.add(worldObject.getRenderableProvider());
-        }
-        modelCache.end();
-    }
-
-    private void setWorldOrigin() {
-        modelCache.begin();
-        worldCamera.calculateOriginRelativePosition(origin, correctionQuaternion);
-        worldCamera.update();
-        for (IWorldDrawableObject worldObject : worldObjects) {
-            if (worldObject.getWorldPosition().dst(origin) < worldCamera.getCamera().far) {
-                worldObject.calculateOriginRelativePosition(origin, correctionQuaternion);
+        if (objectsToDraw != null) {
+            modelCache.begin();
+            for (IWorldDrawableObject worldObject : objectsToDraw) {
                 worldObject.update();
                 modelCache.add(worldObject.getRenderableProvider());
             }
+            modelCache.end();
         }
-        modelCache.end();
     }
+
+    private void setWorldOrigin() {
+        worldCamera.calculateOriginRelativePosition();
+        updateAll();
+    }
+
+    public void updateAll() {
+        worldObjectFilter.update(allObjects);
+        objectsToDraw = worldObjectFilter.getFilteredObjects();
+        updateObjectsAndCache();
+    }
+
 
     public IWorldCamera getWorldCamera() {
         return worldCamera;
+    }
+
+    @Override
+    public void dispose() {
+        allObjects.forEach(Disposable::dispose);
+        unmanagedObjects.forEach(Disposable::dispose);
+        modelCache.dispose();
+        modelBatch.dispose();
     }
 }
 

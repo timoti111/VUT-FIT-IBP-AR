@@ -32,8 +32,9 @@ allprojects {
 
     repositories {
         mavenLocal()
-        mavenCentral()
+       // mavenCentral()
         google()
+        jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }

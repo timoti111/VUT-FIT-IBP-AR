@@ -1,11 +1,11 @@
 package cz.vutbr.fit.xhalas10.bp;
 
-public interface HardwareCamera {
+import com.badlogic.gdx.utils.Disposable;
+
+public interface HardwareCamera extends Disposable {
     void init();
 
     void renderBackground();
-
-    void destroy();
 
     float[] getCameraSensorSize();
 

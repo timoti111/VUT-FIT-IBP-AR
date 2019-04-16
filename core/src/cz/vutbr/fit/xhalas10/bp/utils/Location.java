@@ -110,6 +110,17 @@ public class Location {
         return cartesian;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Location) {
+            Location location = (Location)o;
+            return Double.compare(location.getLatitude(), latitude) == 0 &&
+                    Double.compare(location.getLongitude(), longitude) == 0 &&
+                    Double.compare(location.getAltitude(), altitude) == 0;
+        }
+        return false;
+    }
+
     public Vector3 getNorthPointingVector() {
         updateLocalSpaceVectors();
         return northVector.cpy();

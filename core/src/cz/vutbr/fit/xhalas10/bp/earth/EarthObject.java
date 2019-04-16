@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.scene.IWorldObject;
 import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
+import cz.vutbr.fit.xhalas10.bp.scene.WorldObjectFilter;
 import cz.vutbr.fit.xhalas10.bp.utils.Location;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
@@ -24,16 +25,23 @@ public abstract class EarthObject implements IWorldObject {
         worldPosition.set(location.toCartesian());
     }
 
-    @Override
-    public void calculateOriginRelativePosition(Vector3d origin, Quaternion correctionQuaternion) {
-        originRelativePosition.set(worldPosition.cpy().sub(origin).toVector3());
-        originRelativePosition.mul(WorldManager.correctionMatrix);
+    public void setPosition(Location location) {
+        setPosition(location.getLatitude(), location.getLongitude(), location.getAltitude());
     }
 
-    public boolean isSameLocation(double latitude, double longitude, double altitude) {
-        return Double.compare(location.getLatitude(), latitude) == 0 &&
-                Double.compare(location.getLongitude(), longitude) == 0 &&
-                Double.compare(location.getAltitude(), altitude) == 0;
+    @Override
+    public void calculateOriginRelativePosition() {
+        originRelativePosition.set(worldPosition.cpy().sub(WorldManager.getInstance().getOrigin()).toVector3());
+        originRelativePosition.mul(WorldManager.getInstance().getCorrectionMatrix());
+    }
+
+    @Override
+    public Vector3 getOriginRelativePosition() {
+        return originRelativePosition;
+    }
+
+    public Location getLocation() {
+        return location;
     }
 
     @Override

@@ -34,6 +34,7 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String path = getFilesDir().getAbsolutePath();
         super.onCreate(savedInstanceState);
 
         if (!checkPlayServices())
@@ -70,8 +71,8 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
         androidSensorManager = new AndroidSensorManager(sensorManager);
         androidHardwareCamera = new AndroidHardwareCamera(cameraManager);
         androidLocation = new AndroidPersonLocation(this);
-        androidUtils = new AndroidUtils(this);
-        initialize(new MyGdxGame(androidUtils, androidSensorManager, androidHardwareCamera, androidLocation), config);
+        androidUtils = new AndroidUtils(this, androidHardwareCamera, androidLocation, androidSensorManager);
+        initialize(new MyGdxGame(androidUtils), config);
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {

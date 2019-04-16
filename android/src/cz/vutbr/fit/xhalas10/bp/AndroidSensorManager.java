@@ -36,8 +36,54 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
     @Override
     public void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
-        if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR)
+        if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+            quaternion.set(event.values[0], event.values[1], event.values[2], event.values[3]);
+//            quaternion.set(event.values[2], event.values[1], event.values[0], event.values[3]);
+
+
             quaternion.set(event.values[1], -event.values[0], -event.values[2], -event.values[3]);
+
+            int i0 = 0;
+            int i1 = 1;
+            int i2 = 2;
+//
+//            i0 = 0;
+//            i1 = 2;
+//            i2 = 1;
+//
+//            i0 = 1;
+//            i1 = 0;
+//            i2 = 2;
+//
+//            i0 = 1;
+//            i1 = 2;
+//            i2 = 0;
+//
+//            i0 = 2;
+//            i1 = 0;
+//            i2 = 1;
+//
+//            i0 = 2;
+//            i1 = 1;
+//            i2 = 0;
+
+//            quaternion.set(event.values[i0], event.values[i1], event.values[i2], event.values[3]);
+//            quaternion.set(event.values[i0], event.values[i1], event.values[i2], -event.values[3]);
+//            quaternion.set(event.values[i0], event.values[i1], -event.values[i2], event.values[3]);
+//            quaternion.set(event.values[i0], event.values[i1], -event.values[i2], -event.values[3]);
+//            quaternion.set(event.values[i0], -event.values[i1], event.values[i2], event.values[3]);
+//            quaternion.set(event.values[i0], -event.values[i1], event.values[i2], -event.values[3]);
+//            quaternion.set(event.values[i0], -event.values[i1], -event.values[i2], event.values[3]);
+//            quaternion.set(event.values[i0], -event.values[i1], -event.values[i2], -event.values[3]);
+//            quaternion.set(-event.values[i0], event.values[i1], event.values[i2], event.values[3]);
+//            quaternion.set(-event.values[i0], event.values[i1], event.values[i2], -event.values[3]);
+//            quaternion.set(-event.values[i0], event.values[i1], -event.values[i2], event.values[3]);
+//            quaternion.set(-event.values[i0], event.values[i1], -event.values[i2], -event.values[3]);
+//            quaternion.set(-event.values[i0], -event.values[i1], event.values[i2], event.values[3]);
+//            quaternion.set(-event.values[i0], -event.values[i1], event.values[i2], -event.values[3]);
+//            quaternion.set(-event.values[i0], -event.values[i1], -event.values[i2], event.values[3]);
+//            quaternion.set(-event.values[i0], -event.values[i1], -event.values[i2], -event.values[3]);
+        }
     }
 
     @Override
@@ -54,8 +100,7 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
             actualRotationSensor = rotationVectorSensor;
             sensorManager.unregisterListener(this);
             sensorManager.registerListener(this, rotationVectorSensor, samplingRate);
-        }
-        else {
+        } else {
             actualRotationSensor = gameRotationVectorSensor;
             sensorManager.unregisterListener(this);
             sensorManager.registerListener(this, gameRotationVectorSensor, samplingRate);
