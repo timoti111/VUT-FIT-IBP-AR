@@ -44,7 +44,7 @@ public class MySkin extends Skin {
         this.add("rock", new Texture(Gdx.files.internal("pois/rock.png")));
 
         this.add("settings", new Texture(Gdx.files.internal("settings.png")));
-        this.add("compass", new Texture(Gdx.files.internal("compass_grey2icent.png")));
+        this.add("compass", new Texture(Gdx.files.internal("compass.png")));
 
         this.add("button", new NinePatch(new Texture(Gdx.files.internal("button.png")), 100, 100, 100, 100));
         this.add("line", new NinePatch(new Texture(Gdx.files.internal("line.png")), 0, 0, 15, 15));

@@ -1,6 +1,7 @@
 package cz.vutbr.fit.xhalas10.bp.earth;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -14,6 +15,8 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+
+import java.util.Locale;
 
 import cz.vutbr.fit.xhalas10.bp.MySkin;
 import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
@@ -30,7 +33,8 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     private static final Vector3 scale = new Vector3();
     private static Model model = buildPoiModel();
     ModelInstance modelInstance;
-    Texture textTexture;
+    Texture nameTexture;
+    Texture distanceTexture;
     private OSMData osmData;
     private int priority = 0;
 
@@ -47,7 +51,8 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
 
         if (node.getTags().containsValue("viewpoint") || node.getTags().containsValue("peak")) {
             texture = MySkin.getInstance().get(name == null ? "viewPoint" : "peak", Texture.class);
-            poi = new Poi(name == null ? "View Point" : name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
+            name = String.format(String.format(Locale.getDefault(), "%s (%d m)", name == null ? "View Point" : name, (int)Math.round(node.getElevation())), 50);
+            poi = new Poi(name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
             poi.setPriority(100);
             return poi;
         }
@@ -115,11 +120,14 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
 
     public Poi(String text, Texture texture) {
         modelInstance = new ModelInstance(model);
-        textTexture = TextureTextGenerator.generateTexture(text, 50);
+        nameTexture = TextureTextGenerator.generateTexture(text, 50, Color.YELLOW);
+        distanceTexture = TextureTextGenerator.generateTexture("(0m)", 50, Color.YELLOW);
         modelInstance.getMaterial("TextureHolder").set(TextureAttribute.createDiffuse(texture));
-        modelInstance.getMaterial("TextHolder").set(TextureAttribute.createDiffuse(textTexture));
+        modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture));
+        modelInstance.getMaterial("NameHolder").set(TextureAttribute.createDiffuse(nameTexture));
         modelInstance.getNode("poi").scale.set((float) texture.getWidth() / (float) texture.getHeight(), 1.0f, 1.0f);
-        modelInstance.getNode("text").scale.set((float) textTexture.getWidth() / (float) textTexture.getHeight(), 1.0f, 1.0f);
+        modelInstance.getNode("distance").scale.set((float) distanceTexture.getWidth() / (float) distanceTexture.getHeight(), 1.0f, 1.0f);
+        modelInstance.getNode("name").scale.set((float) nameTexture.getWidth() / (float) nameTexture.getHeight(), 1.0f, 1.0f);
         modelInstance.calculateTransforms();
     }
 
@@ -149,11 +157,27 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
                 0, 0, 1);
 
         node = modelBuilder.node();
-        node.id = "text";
-        node.translation.add(0.0f, POI_HEIGHT_AT_1M + POI_HEIGHT_AT_1M * 0.25f, 0.0f);
-        material = new Material("TextHolder");
+        node.id = "distance";
+        node.translation.add(0.0f, POI_HEIGHT_AT_1M * 1.25f, 0.0f);
+        material = new Material("DistanceHolder");
         material.set(new BlendingAttribute(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA));
-        meshBuilder = modelBuilder.part("text", Gdx.gl.GL_TRIANGLES,
+        meshBuilder = modelBuilder.part("distance", Gdx.gl.GL_TRIANGLES,
+                VertexAttributes.Usage.Position |
+                        VertexAttributes.Usage.Normal |
+                        VertexAttributes.Usage.TextureCoordinates, material);
+        meshBuilder.rect(
+                -FONT_HEIGHT_AT_1M / 2.0f, -FONT_HEIGHT_AT_1M / 2.0f, 0,
+                FONT_HEIGHT_AT_1M / 2.0f, -FONT_HEIGHT_AT_1M / 2.0f, 0,
+                FONT_HEIGHT_AT_1M / 2.0f, FONT_HEIGHT_AT_1M / 2.0f, 0,
+                -FONT_HEIGHT_AT_1M / 2.0f, FONT_HEIGHT_AT_1M / 2.0f, 0,
+                0, 0, 1);
+
+        node = modelBuilder.node();
+        node.id = "name";
+        node.translation.add(0.0f, POI_HEIGHT_AT_1M * 1.25f + FONT_HEIGHT_AT_1M * 1.25f, 0.0f);
+        material = new Material("NameHolder");
+        material.set(new BlendingAttribute(Gdx.gl.GL_SRC_ALPHA, Gdx.gl.GL_ONE_MINUS_SRC_ALPHA));
+        meshBuilder = modelBuilder.part("name", Gdx.gl.GL_TRIANGLES,
                 VertexAttributes.Usage.Position |
                         VertexAttributes.Usage.Normal |
                         VertexAttributes.Usage.TextureCoordinates, material);
@@ -192,12 +216,22 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
 
     @Override
     public void update() {
-        setPositionLookAtTarget(WorldManager.getInstance().getWorldCamera().getCamera().position);
+        float distance = originRelativePosition.dst(WorldManager.getInstance().getWorldCamera().getOriginRelativePosition());
+        distanceTexture.dispose();
+
+        distanceTexture = TextureTextGenerator.generateTexture(distance > 1000.0f ? String.format(Locale.getDefault(), "%.1f km", distance / 1000.0f) : String.format(Locale.getDefault(), "%.1fm", distance), 50, Color.YELLOW);
+        modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture));
+        modelInstance.getNode("distance").scale.set((float) distanceTexture.getWidth() / (float) distanceTexture.getHeight(), 1.0f, 1.0f);
+        modelInstance.calculateTransforms();
+        setPositionLookAtTarget(WorldManager.getInstance().getWorldCamera().getOriginRelativePosition());
     }
 
     @Override
     public void dispose() {
-        textTexture.dispose();
-        model.dispose();
+        nameTexture.dispose();
+    }
+
+    public static void disposeModel() {
+
     }
 }

@@ -21,7 +21,8 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
         gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         actualRotationSensor = gameRotationVectorSensor;
-        samplingRate = SensorManager.SENSOR_DELAY_FASTEST;
+        samplingRate = SensorManager.SENSOR_DELAY_GAME;
+        samplingRate = 16666;
         quaternion = new Quaternion();
     }
 

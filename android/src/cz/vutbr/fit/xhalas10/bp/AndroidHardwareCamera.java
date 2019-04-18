@@ -22,6 +22,7 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Matrix4;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -40,7 +41,8 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
     private CaptureRequest.Builder mPreviewRequestBuilder;
-    private Size mPreviewSize = new Size(1280, 720);
+    private Size mPreviewSize = new Size(1920, 1080);
+    private Range<Integer> fpsRange = Range.create(60, 60);
     private int[] texture = new int[1];
 
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
@@ -189,7 +191,6 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
 
                             mCaptureSession = cameraCaptureSession;
                             try {
-                                Range<Integer> fpsRange = Range.create(60, 60);
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
@@ -259,12 +260,12 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
                 1.0f, 1.0f,   // Position 3
                 1.0f, 0.0f    // TexCoord 3
         };
-
         //The indices come in trios of vertex indices that describe the triangles of our mesh
         short[] indices = {0, 1, 2, 0, 2, 3};
         //Set vertices and indices to our mesh
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
+        mesh.transform(new Matrix4().idt().scale(1.0f, Gdx.graphics.getWidth() / 1920.0f, 1.0f));
         initTex();
         mSTexture = new SurfaceTexture(texture[0]);
         mSTexture.setOnFrameAvailableListener(this);

@@ -22,7 +22,7 @@ public class EarthCamera extends EarthObject implements IWorldCamera {
         double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double)hardwareCamera.getCameraFocalLength())));
         camera = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.01f;
-        camera.far = 6000f;
+        camera.far = 15000f;
         basicQuaternion = new Quaternion();
         setCorrectionAngle(0.0f);
     }

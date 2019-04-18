@@ -107,12 +107,15 @@ class Sector {
         else {
             Vector3 position = actualWorldDrawableObject.getOriginRelativePosition();
             float newWorldDrawableObjectDistance = newWorldDrawableObject.getOriginRelativePosition().len();
-            if (newWorldDrawableObjectDistance < position.len()) {
-                visibleObjects.set(index, newWorldDrawableObject);
-            }
+            float newWorldDrawableObjectDistanceFromCamera = newWorldDrawableObject.getOriginRelativePosition().dst(WorldManager.getInstance().getWorldCamera().getOriginRelativePosition());
+            if (newWorldDrawableObjectDistanceFromCamera < WorldManager.getInstance().getWorldCamera().getCamera().far) {
+                if (newWorldDrawableObjectDistance < position.len()) {
+                    visibleObjects.set(index, newWorldDrawableObject);
+                }
 //            else if (newWorldDrawableObject.getPriority() > actualWorldDrawableObject.getPriority()) {
 //                visibleObjects.set(index, newWorldDrawableObject);
 //            }
+            }
         }
     }
 

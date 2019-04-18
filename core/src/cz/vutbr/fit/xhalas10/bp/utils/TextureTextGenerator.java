@@ -16,8 +16,9 @@ public class TextureTextGenerator {
     private static GlyphLayout glyphLayout = new GlyphLayout();
     private static SpriteBatch batch = new SpriteBatch();
     private static Matrix4 lm = new Matrix4();
-    public static Texture generateTexture(String text, int size) {
+    public static Texture generateTexture(String text, int size, Color color) {
         BitmapFont font = MySkin.getInstance().getFont("default");
+        font.setColor(color);
 
         glyphLayout.setText(font, text);
         int width = (int)Math.ceil(glyphLayout.width);

@@ -93,6 +93,9 @@ public class UserInterface {
         return button;
     }
 
+    private static float offsetValue = 0.0f;
+    private static float lastValue = 0.0f;
+
     private HorizontalGroup createHeightCalibrationSlider() {
         calibrationSlider = new HorizontalGroup();
         final Slider slider = new Slider(-15.0f, 15.0f, 0.5f, true, MySkin.getInstance());
@@ -105,11 +108,24 @@ public class UserInterface {
         final Label label = new Label(Float.toString(slider.getValue()) + "m", MySkin.getInstance(), "labelWhite");
 
         slider.setHeight(Gdx.graphics.getHeight() / 2.0f);
-        slider.addListener(new ChangeListener(){
+        calibrationSlider.addListener(new InputListener(){
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                label.setText(Float.toString(slider.getValue()) + "m");
-                myGdxGame.setCameraHeightOffset(slider.getValue());
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                lastValue = 0.0f;
+                slider.setValue(0.0f);
+            }
+
+            @Override
+            public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                offsetValue += lastValue - slider.getValue();
+                lastValue = slider.getValue();
+                label.setText(Float.toString(offsetValue) + "m");
+                myGdxGame.setCameraHeightOffset(offsetValue);
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
             }
         });
 

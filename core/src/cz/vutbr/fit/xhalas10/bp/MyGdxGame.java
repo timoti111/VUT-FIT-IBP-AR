@@ -161,6 +161,7 @@ public class MyGdxGame extends ApplicationAdapter {
         utils.getHardwareCamera().dispose();
         worldManager.dispose();
         stage.dispose();
+        Poi.disposeModel();
     }
 
     public void useCompass(boolean value) {
