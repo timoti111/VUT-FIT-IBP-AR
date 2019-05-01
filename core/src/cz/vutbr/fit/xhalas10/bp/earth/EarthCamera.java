@@ -8,13 +8,12 @@ import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.HardwareCamera;
 import cz.vutbr.fit.xhalas10.bp.scene.IWorldCamera;
-import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
 
 public class EarthCamera extends EarthObject implements IWorldCamera {
     Camera camera;
     float height;
     Quaternion sensorQuaternion;
-    Quaternion basicQuaternion;
+    Quaternion angleCorrectionQuaternion;
 
     public EarthCamera(HardwareCamera hardwareCamera) {
         this.camera = camera;
@@ -23,7 +22,7 @@ public class EarthCamera extends EarthObject implements IWorldCamera {
         camera = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.01f;
         camera.far = 15000f;
-        basicQuaternion = new Quaternion();
+        angleCorrectionQuaternion = new Quaternion();
         setCorrectionAngle(0.0f);
     }
 
@@ -40,13 +39,12 @@ public class EarthCamera extends EarthObject implements IWorldCamera {
         camera.position.add(0.0f, height, 0.0f);
         camera.direction.set(0.0f, 0.0f, -1.0f);
         camera.up.set(Vector3.Y);
-        camera.rotate(tmpQuat.set(sensorQuaternion).mulLeft(basicQuaternion));
+        camera.rotate(tmpQuat.set(sensorQuaternion).mulLeft(angleCorrectionQuaternion));
         camera.update();
     }
 
     public void setCorrectionAngle(float angle) {
-        basicQuaternion.setFromAxis(1.0f, 0.0f, 0.0f, -90.0f);
-        basicQuaternion.mulLeft(tmpQuat.setFromAxis(0.0f, 1.0f, 0.0f, angle - 90.0f));
+        angleCorrectionQuaternion.setFromAxis(0.0f, 1.0f, 0.0f, angle);
     }
 
     public void setHeight(float height) {

@@ -38,6 +38,8 @@ public class WorldObjectFilter {
     public void update(Iterable<IWorldDrawableObject> worldDrawableObjects) {
         reset();
         for (IWorldDrawableObject worldDrawableObject : worldDrawableObjects) {
+            if (worldDrawableObject.isAlive())
+                worldDrawableObject.dispose();
             worldDrawableObject.calculateOriginRelativePosition();
             int index = determineSectorIndex(worldDrawableObject.getOriginRelativePosition());
             sectors.get(index).add(worldDrawableObject);
@@ -48,8 +50,11 @@ public class WorldObjectFilter {
         filteredObjects.clear();
         for (Sector sector : sectors) {
             for (IWorldDrawableObject visibleObject : sector.getVisibleObjects()) {
-                if (visibleObject != null)
+                if (visibleObject != null) {
+                    if (!visibleObject.isAlive())
+                        visibleObject.create();
                     filteredObjects.add(visibleObject);
+                }
             }
         }
         return filteredObjects;
@@ -78,6 +83,7 @@ class Sector {
     private static final int quadrantVerticalParts = 5;
     private Array<IWorldDrawableObject> visibleObjects;
     private Array<Float> heightConstants;
+
 
     Sector() {
         visibleObjects = new Array<>(quadrantVerticalParts * 2);

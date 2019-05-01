@@ -3,11 +3,10 @@ package cz.vutbr.fit.xhalas10.bp.utils;
 import com.badlogic.gdx.math.Vector3;
 
 public class Location {
-    private double latitude, longitude, altitude;
+    private double latitude, longitude, altitude, WGS84altitude;
     private static final double A = 6378137.0;
-    private static final double B = 6356752.314245;
-    private static final double F = (A - B) / A;
-    private static final double E_SQ = 2.0 * F - F * F;
+    private static final double B_SQ_DIV_A_SQ = 0.99330562;
+    private static final double E_SQ = 0.00669437999014;
     private Vector3d cartesian = new Vector3d();
     private Vector3 normalVector = new Vector3();
     private Vector3 northVector = new Vector3();
@@ -18,14 +17,11 @@ public class Location {
     private double cosLat, cosLon, sinLat, sinLon;
 
     public Location(double latitude, double longitude, double altitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
-        setUpdate();
+        set(latitude, longitude, altitude);
     }
 
     public Location(Location location) {
-        this(location.latitude, location.longitude, location.altitude);
+        set(location);
     }
 
     public Location() {
@@ -36,12 +32,20 @@ public class Location {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
+        updateWGS84altitude();
         setUpdate();
     }
 
     public void set(Location location) {
-        set(location.latitude, location.longitude, location.altitude);
+        this.latitude = location.latitude;
+        this.longitude = location.longitude;
+        this.altitude = location.altitude;
+        this.WGS84altitude = location.WGS84altitude;
         setUpdate();
+    }
+
+    private void updateWGS84altitude() {
+        WGS84altitude = altitude + GeoidCalculator.getInstance().getHeightFromLatAndLon(latitude, longitude);
     }
 
     public double getLatitude() {
@@ -54,21 +58,6 @@ public class Location {
 
     public double getAltitude() {
         return altitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-        setUpdate();
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-        setUpdate();
-    }
-
-    public void setAltitude(double altitude) {
-        this.altitude = altitude;
-        setUpdate();
     }
 
     private void setUpdate() {
@@ -101,9 +90,9 @@ public class Location {
         updateCosSin();
         if (updateCartesian) {
             double N = A / Math.sqrt(1.0 - E_SQ * sinLat * sinLat);
-            double x = (N + altitude) * cosLat * sinLon;
-            double y = (N + altitude) * cosLat * cosLon;
-            double z = -(N * (1.0 - E_SQ) + altitude) * sinLat;
+            double x = (N + WGS84altitude) * cosLat * sinLon;
+            double y = (N + WGS84altitude) * cosLat * cosLon;
+            double z = -(B_SQ_DIV_A_SQ * N + WGS84altitude) * sinLat;
             cartesian.set(x, y, z);
             updateCartesian = false;
         }

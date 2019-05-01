@@ -4,19 +4,24 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
-import java.util.Locale;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import cz.vutbr.fit.xhalas10.bp.MySkin;
 import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
@@ -32,17 +37,16 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     private static final Vector3 defaultLookAt = new Vector3(Vector3.Z);
     private static final Vector3 scale = new Vector3();
     private static Model model = buildPoiModel();
+    public static NumberFormat numberFormat;
+    private String name;
     ModelInstance modelInstance;
-    Texture nameTexture;
-    Texture distanceTexture;
+    FrameBuffer nameTexture;
+    FrameBuffer distanceTexture;
+    TextureRegion distanceTextureRegion;
     private OSMData osmData;
     private int priority = 0;
-
-    public static Poi newBasicPoi(String text, double latitude, double longitude, double altitude) {
-        Texture texture = MySkin.getInstance().get("basicPoi", Texture.class);
-        return new Poi(text, texture, latitude, longitude, altitude);
-    }
-
+    private static Color fontColor = Color.YELLOW.cpy();
+    private boolean alive = false;
 
     public static Poi fromOSMNode(cz.vutbr.fit.xhalas10.bp.osm.model.Node node) {
         Poi poi;
@@ -51,7 +55,7 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
 
         if (node.getTags().containsValue("viewpoint") || node.getTags().containsValue("peak")) {
             texture = MySkin.getInstance().get(name == null ? "viewPoint" : "peak", Texture.class);
-            name = String.format(String.format(Locale.getDefault(), "%s (%d m)", name == null ? "View Point" : name, (int)Math.round(node.getElevation())), 50);
+            name = name == null ? "View Point" : name + " (" + (int)Math.round(node.getElevation()) + " m)";
             poi = new Poi(name, texture, node.getLocation().lat, node.getLocation().lng, node.getElevation());
             poi.setPriority(100);
             return poi;
@@ -118,17 +122,30 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
         return poi;
     }
 
-    public Poi(String text, Texture texture) {
+    private Poi() {
+        if (numberFormat == null) {
+            numberFormat = new DecimalFormat();
+            numberFormat.setMaximumFractionDigits(1);
+            numberFormat.setRoundingMode(RoundingMode.HALF_UP);
+        }
+
         modelInstance = new ModelInstance(model);
-        nameTexture = TextureTextGenerator.generateTexture(text, 50, Color.YELLOW);
-        distanceTexture = TextureTextGenerator.generateTexture("(0m)", 50, Color.YELLOW);
+        name = "";
+    }
+
+    private Poi(String text, Texture texture) {
+        this();
+        this.name = text;
         modelInstance.getMaterial("TextureHolder").set(TextureAttribute.createDiffuse(texture));
-        modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture));
-        modelInstance.getMaterial("NameHolder").set(TextureAttribute.createDiffuse(nameTexture));
         modelInstance.getNode("poi").scale.set((float) texture.getWidth() / (float) texture.getHeight(), 1.0f, 1.0f);
-        modelInstance.getNode("distance").scale.set((float) distanceTexture.getWidth() / (float) distanceTexture.getHeight(), 1.0f, 1.0f);
+    }
+
+    @Override
+    public void create() {
+        nameTexture = TextureTextGenerator.generateTexture(name, 50, fontColor);
+        modelInstance.getMaterial("NameHolder").set(TextureAttribute.createDiffuse(nameTexture.getColorBufferTexture()));
         modelInstance.getNode("name").scale.set((float) nameTexture.getWidth() / (float) nameTexture.getHeight(), 1.0f, 1.0f);
-        modelInstance.calculateTransforms();
+        alive = true;
     }
 
     public Poi(String text, Texture texture, double latitude, double longitude, double altitude) {
@@ -217,11 +234,11 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     @Override
     public void update() {
         float distance = originRelativePosition.dst(WorldManager.getInstance().getWorldCamera().getOriginRelativePosition());
-        distanceTexture.dispose();
-
-        distanceTexture = TextureTextGenerator.generateTexture(distance > 1000.0f ? String.format(Locale.getDefault(), "%.1f km", distance / 1000.0f) : String.format(Locale.getDefault(), "%.1fm", distance), 50, Color.YELLOW);
-        modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture));
-        modelInstance.getNode("distance").scale.set((float) distanceTexture.getWidth() / (float) distanceTexture.getHeight(), 1.0f, 1.0f);
+        if (distanceTexture != null)
+            distanceTexture.dispose();
+        distanceTexture = TextureTextGenerator.generateTexture(distance > 999.999f ? numberFormat.format(distance / 1000.0f) + " km" : numberFormat.format(distance) + " m", 50, fontColor);
+        modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture.getColorBufferTexture()));
+        modelInstance.getNode("distance").scale.set((float)distanceTexture.getWidth() / (float)distanceTexture.getHeight(), 1.0f, 1.0f);
         modelInstance.calculateTransforms();
         setPositionLookAtTarget(WorldManager.getInstance().getWorldCamera().getOriginRelativePosition());
     }
@@ -229,9 +246,16 @@ public class Poi extends EarthObject implements IWorldDrawableObject {
     @Override
     public void dispose() {
         nameTexture.dispose();
+        distanceTexture.dispose();
+        alive = false;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return alive;
     }
 
     public static void disposeModel() {
-
+        model.dispose();
     }
 }

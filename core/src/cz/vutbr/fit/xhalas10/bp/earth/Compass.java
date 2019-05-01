@@ -59,6 +59,16 @@ public class Compass extends EarthObject implements IWorldDrawableObject {
     }
 
     @Override
+    public void create() {
+
+    }
+
+    @Override
+    public boolean isAlive() {
+        return false;
+    }
+
+    @Override
     public void dispose() {
         model.dispose();
     }

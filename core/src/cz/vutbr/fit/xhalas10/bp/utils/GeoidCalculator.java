@@ -207,11 +207,11 @@ the constants of the wgs84(g873) system are used*/
         gr[0] = geqt * (1 + k * t1) / Math.sqrt(1 - e2 * t1);/*compute normal gravity:units are m/sec**2*/
     }
 
+    private static double[] rlat = new double[1];
+    private static double[] gr = new double[1];
+    private static double[] re = new double[1];
 
     private double undulation(double lat, double lon, int nmax, int k) {
-        double[] rlat = new double[1];
-        double[] gr = new double[1];
-        double[] re = new double[1];
         int i, j, m;
         radgra(lat, lon, rlat, gr, re);
         rlat[0] = Math.PI / 2.0 - rlat[0];

@@ -12,22 +12,19 @@ import cz.vutbr.fit.xhalas10.bp.earth.Compass;
 import cz.vutbr.fit.xhalas10.bp.earth.EarthCamera;
 import cz.vutbr.fit.xhalas10.bp.earth.Poi;
 import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
-import cz.vutbr.fit.xhalas10.bp.osm.model.Node;
 import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
+import cz.vutbr.fit.xhalas10.bp.utils.TextureTextGenerator;
 
-public class MyGdxGame extends ApplicationAdapter {
-//    private static final boolean showDebugInfo = true;
+public class ARNature extends ApplicationAdapter {
     private final double TOUCH_SCALE_FACTOR = 63.0 / 1920.0;
     Stage stage;
     private float angle = 0;
-//    private Label positionLabel;
-//    private Label accuracyLabel;
     private boolean canRotateCamera = false;
     private WorldManager worldManager;
     private EarthCamera earthCamera;
     private Utils utils;
 
-    MyGdxGame(Utils utils) {
+    ARNature(Utils utils) {
         this.utils = utils;
     }
 
@@ -39,24 +36,6 @@ public class MyGdxGame extends ApplicationAdapter {
         UserInterface userInterface = new UserInterface(this);
         userInterface.setToStage();
 
-//        BitmapFont font = MySkin.getInstance().getFont("default");
-//        Label.LabelStyle style = new Label.LabelStyle(font, Color.GREEN);
-//        positionLabel = new Label("Press a Button", style);
-//        positionLabel.setSize(Gdx.graphics.getWidth(), 60);
-//        positionLabel.setPosition(0, 0);
-//        positionLabel.setAlignment(Align.center);
-//        positionLabel.toBack();
-//
-//        accuracyLabel = new Label("Press a Button", style);
-//        accuracyLabel.setSize(Gdx.graphics.getWidth(), 60);
-//        accuracyLabel.setPosition(0, 60);
-//        accuracyLabel.setAlignment(Align.center);
-//        accuracyLabel.toBack();
-//        if (showDebugInfo) {
-//            stage.addActor(positionLabel);
-//            stage.addActor(accuracyLabel);
-//        }
-
         utils.getHardwareCamera().init();
         earthCamera = new EarthCamera(utils.getHardwareCamera());
 
@@ -65,10 +44,7 @@ public class MyGdxGame extends ApplicationAdapter {
 
         Compass compass = new Compass();
         worldManager.addWorldObject(compass, false);
-
-        for (Node node : OSMData.getInstance().getOSMNodes()) {
-            worldManager.addWorldObject(Poi.fromOSMNode(node), true);
-        }
+        OSMData.getInstance().getOSMNodes().forEach(node -> worldManager.addWorldObject(Poi.fromOSMNode(node), true));
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
@@ -132,17 +108,6 @@ public class MyGdxGame extends ApplicationAdapter {
             earthCamera.setPosition(utils.getPersonLocation().getLocation());
             earthCamera.calculateOriginRelativePosition();
             worldManager.updateObjectsAndCache();
-//            if (showDebugInfo) {
-//                positionLabel.setText(String.format(Locale.getDefault(), "Lat: %.6f   Lon: %.6f   Alt: %.1f",
-//                        utils.getPersonLocation().getLocation().getLatitude(),
-//                        utils.getPersonLocation().getLocation().getLongitude(),
-//                        utils.getPersonLocation().getLocation().getAltitude()));
-//
-//                accuracyLabel.setText(String.format(Locale.getDefault(), "Nodes: %d   hAc: %.1f   vAc: %.1f",
-//                        OSMData.getInstance().getOSMNodes().size(),
-//                        utils.getPersonLocation().getVerticalAccuracy(),
-//                        utils.getPersonLocation().getHorizontalAccuracy()));
-//            }
         }
     }
 
@@ -162,6 +127,7 @@ public class MyGdxGame extends ApplicationAdapter {
         worldManager.dispose();
         stage.dispose();
         Poi.disposeModel();
+        TextureTextGenerator.dispose();
     }
 
     public void useCompass(boolean value) {

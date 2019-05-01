@@ -26,7 +26,8 @@ public abstract class EarthObject implements IWorldObject {
     }
 
     public void setPosition(Location location) {
-        setPosition(location.getLatitude(), location.getLongitude(), location.getAltitude());
+        this.location.set(location);
+        worldPosition.set(this.location.toCartesian());
     }
 
     @Override

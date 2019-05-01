@@ -2,18 +2,13 @@ package cz.vutbr.fit.xhalas10.bp;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -23,8 +18,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
@@ -40,13 +33,13 @@ public class UserInterface {
     private Group mainMenu;
     private Group legend;
     private ImageButton settingsButton;
-    private MyGdxGame myGdxGame;
+    private ARNature ARNature;
     private ImageTextButton calibrationDoneButton;
     private HorizontalGroup calibrationSlider;
 
-    public UserInterface(final MyGdxGame myGdxGame) {
-        this.stage = myGdxGame.stage;
-        this.myGdxGame = myGdxGame;
+    public UserInterface(final ARNature ARNature) {
+        this.stage = ARNature.stage;
+        this.ARNature = ARNature;
 
         actors.add(createCalibrationDoneButton());
         actors.add(createMainMenu());
@@ -120,7 +113,7 @@ public class UserInterface {
                 offsetValue += lastValue - slider.getValue();
                 lastValue = slider.getValue();
                 label.setText(Float.toString(offsetValue) + "m");
-                myGdxGame.setCameraHeightOffset(offsetValue);
+                ARNature.setCameraHeightOffset(offsetValue);
             }
 
             @Override
@@ -150,7 +143,7 @@ public class UserInterface {
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                 hideActor(calibrationDoneButton);
                 hideActor(calibrationSlider);
-                myGdxGame.canRotateCamera(false);
+                ARNature.canRotateCamera(false);
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -201,8 +194,8 @@ public class UserInterface {
         useCompass.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                myGdxGame.useCompass(useCompass.isChecked());
-                myGdxGame.setAngle(0);
+                ARNature.useCompass(useCompass.isChecked());
+                ARNature.setAngle(0);
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -210,7 +203,7 @@ public class UserInterface {
             }
         });
         useCompass.setChecked(true);
-        myGdxGame.useCompass(true);
+        ARNature.useCompass(true);
 
         ImageTextButton calibrateCamera = createImageTextButton("Calibrate camera");
         calibrateCamera.addListener(new InputListener() {
@@ -219,7 +212,7 @@ public class UserInterface {
                 showActor(calibrationDoneButton);
                 showActor(calibrationSlider);
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f);
-                myGdxGame.canRotateCamera(true);
+                ARNature.canRotateCamera(true);
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -232,7 +225,7 @@ public class UserInterface {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f);
-                myGdxGame.downloadSurroundingData();
+                ARNature.downloadSurroundingData();
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {

@@ -6,6 +6,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector3;
 
 public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.xhalas10.bp.SensorManager {
     private SensorManager sensorManager;
@@ -21,7 +22,6 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
         gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         actualRotationSensor = gameRotationVectorSensor;
-        samplingRate = SensorManager.SENSOR_DELAY_GAME;
         samplingRate = 16666;
         quaternion = new Quaternion();
     }
@@ -34,56 +34,14 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
         sensorManager.unregisterListener(this);
     }
 
+    private static final Quaternion correctionQuaternion = new Quaternion(Vector3.X, -90.0f).mulLeft(new Quaternion(Vector3.Y, -90.0f));
+    private static final Quaternion tmpQuat = new Quaternion();
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         int sensorType = event.sensor.getType();
-        if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR) {
-            quaternion.set(event.values[0], event.values[1], event.values[2], event.values[3]);
-//            quaternion.set(event.values[2], event.values[1], event.values[0], event.values[3]);
-
-
-            quaternion.set(event.values[1], -event.values[0], -event.values[2], -event.values[3]);
-
-            int i0 = 0;
-            int i1 = 1;
-            int i2 = 2;
-//
-//            i0 = 0;
-//            i1 = 2;
-//            i2 = 1;
-//
-//            i0 = 1;
-//            i1 = 0;
-//            i2 = 2;
-//
-//            i0 = 1;
-//            i1 = 2;
-//            i2 = 0;
-//
-//            i0 = 2;
-//            i1 = 0;
-//            i2 = 1;
-//
-//            i0 = 2;
-//            i1 = 1;
-//            i2 = 0;
-
-//            quaternion.set(event.values[i0], event.values[i1], event.values[i2], event.values[3]);
-//            quaternion.set(event.values[i0], event.values[i1], event.values[i2], -event.values[3]);
-//            quaternion.set(event.values[i0], event.values[i1], -event.values[i2], event.values[3]);
-//            quaternion.set(event.values[i0], event.values[i1], -event.values[i2], -event.values[3]);
-//            quaternion.set(event.values[i0], -event.values[i1], event.values[i2], event.values[3]);
-//            quaternion.set(event.values[i0], -event.values[i1], event.values[i2], -event.values[3]);
-//            quaternion.set(event.values[i0], -event.values[i1], -event.values[i2], event.values[3]);
-//            quaternion.set(event.values[i0], -event.values[i1], -event.values[i2], -event.values[3]);
-//            quaternion.set(-event.values[i0], event.values[i1], event.values[i2], event.values[3]);
-//            quaternion.set(-event.values[i0], event.values[i1], event.values[i2], -event.values[3]);
-//            quaternion.set(-event.values[i0], event.values[i1], -event.values[i2], event.values[3]);
-//            quaternion.set(-event.values[i0], event.values[i1], -event.values[i2], -event.values[3]);
-//            quaternion.set(-event.values[i0], -event.values[i1], event.values[i2], event.values[3]);
-//            quaternion.set(-event.values[i0], -event.values[i1], event.values[i2], -event.values[3]);
-//            quaternion.set(-event.values[i0], -event.values[i1], -event.values[i2], event.values[3]);
-//            quaternion.set(-event.values[i0], -event.values[i1], -event.values[i2], -event.values[3]);
+        if (sensorType == Sensor.TYPE_ROTATION_VECTOR || sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR) {
+            quaternion.set(tmpQuat.set(event.values[1], -event.values[0], -event.values[2], -event.values[3]).mulLeft(correctionQuaternion));
         }
     }
 

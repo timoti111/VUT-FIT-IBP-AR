@@ -9,15 +9,12 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.widget.Toast;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class AndroidLauncher extends AndroidApplication implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -56,10 +53,10 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
         config.useAccelerometer = false;
         config.useCompass = false;
         config.useImmersiveMode = true;
-        //config.useWakelock = true;
+        config.useWakelock = true;
         config.disableAudio = true;
-        config.useGL30 = true;
-        config.useGLSurfaceView20API18 = true;
+//        config.useGL30 = true;
+//        config.useGLSurfaceView20API18 = true;
         config.r = 8;
         config.g = 8;
         config.b = 8;
@@ -72,7 +69,7 @@ public class AndroidLauncher extends AndroidApplication implements ActivityCompa
         androidHardwareCamera = new AndroidHardwareCamera(cameraManager);
         androidLocation = new AndroidPersonLocation(this);
         androidUtils = new AndroidUtils(this, androidHardwareCamera, androidLocation, androidSensorManager);
-        initialize(new MyGdxGame(androidUtils), config);
+        initialize(new ARNature(androidUtils), config);
     }
 
     private ArrayList<String> permissionsToRequest(ArrayList<String> wantedPermissions) {

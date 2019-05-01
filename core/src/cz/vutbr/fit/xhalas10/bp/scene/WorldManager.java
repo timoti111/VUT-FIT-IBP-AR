@@ -1,6 +1,5 @@
 package cz.vutbr.fit.xhalas10.bp.scene;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelCache;
 import com.badlogic.gdx.math.Matrix4;
@@ -8,9 +7,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.async.AsyncExecutor;
-import com.badlogic.gdx.utils.async.AsyncResult;
-import com.badlogic.gdx.utils.async.AsyncTask;
 
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
