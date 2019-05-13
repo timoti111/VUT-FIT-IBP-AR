@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp.utils;
+package cz.vutbr.fit.xhalas10.bp.earth.wgs84;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -7,49 +7,34 @@ import java.io.ObjectInputStream;
 
 // http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html
 // https://stackoverflow.com/questions/22196714/wgs84-geoid-height-altitude-offset-for-external-gps-data-on-ios
-public class GeoidCalculator {
+public class GeoidUndulation {
     private final static int l_value = 65341;
     private final static int _361 = 361;
-    private static int nmax = 360;
-    private static double currentHeight;
-    private static double[] cc/* = new double[l_value + 1]*/;
-    private static double[] cs/* = new double[l_value + 1]*/;
-    private static double[] hc/* = new double[l_value + 1]*/;
-    private static double[] hs/* = new double[l_value + 1]*/;
+    private static double[] cc;
+    private static double[] cs;
+    private static double[] hc;
+    private static double[] hs;
     private static double[] p = new double[l_value + 1];
     private static double[] sinml = new double[_361 + 1];
     private static double[] cosml = new double[_361 + 1];
     private static double[] rleg = new double[_361 + 1];
-
-    /*constants for wgs84(g873);gm in units of m**3/s**2*/
-    private final static double gm = .3986004418e15, ae = 6378137.;
-
-    /*the even degree zonal coefficients given below were computed for the
-     wgs84(g873) system of constants and are identical to those values
-     used in the NIMA gridding procedure. computed using subroutine
-     grs written by N.K. PAVLIS*/
-    private final static double j2 = 0.108262982131e-2, j4 = -.237091120053e-05, j6 = 0.608346498882e-8, j8 = -0.142681087920e-10, j10 = 0.121439275882e-13;
-
-
     private static double[] drts = new double[1301];
     private static double[] dirt = new double[1301];
     private static double[] rlnn = new double[_361+ 1];
-    static double cothet, sithet;
-    static int ir = 0;
+    private static int ir = 0;
 
-
+    private final static double gm = .3986004418e15, ae = 6378137.;
     private final static double a = 6378137., e2 = .00669437999013, geqt = 9.7803253359, k = .00193185265246;
 
-    private static final GeoidCalculator ourInstance = new GeoidCalculator();
+    private static final GeoidUndulation ourInstance = new GeoidUndulation();
 
-    public static GeoidCalculator getInstance() {
+    public static GeoidUndulation getInstance() {
         return ourInstance;
     }
 
-    private GeoidCalculator() {
+    private GeoidUndulation() {
         synchronized(this) {
             try {
-                // Try to load before generated data with init_arrays() and then serialized to *.dat files.
                 FileHandle file = Gdx.files.internal("geoid_data/cc.dat");
                 ObjectInputStream ois = new ObjectInputStream(file.read());
                 cc = (double[])ois.readObject();
@@ -72,24 +57,9 @@ public class GeoidCalculator {
         }
     }
 
-    public double getHeightFromLatAndLon(double lat, double lon) {
-        updatePositionWithLatitudeAndLongitude(lat, lon);
-        return getCurrentHeightOffset();
-    }
-
-    private double getCurrentHeightOffset() {
-        return currentHeight;
-    }
-
-    private void updatePositionWithLatitudeAndLongitude(double lat, double lon) {
-        /*compute the geocentric latitude,geocentric radius,normal gravity*/
-        double u = undulation(Math.toRadians(lat), Math.toRadians(lon), nmax, nmax + 1);
-
-        /*u is the geoid undulation from the egm96 potential coefficient model
-           including the height anomaly to geoid undulation correction term
-           and a correction term to have the undulations refer to the
-           wgs84 ellipsoid. the geoid undulation unit is meters.*/
-        currentHeight = u;
+    public double getUndulation(double lat, double lon) {
+        int nmax = 360;
+        return undulation(Math.toRadians(lat), Math.toRadians(lon), nmax, nmax + 1);
     }
 
     private double hundu(long nmax, double gr, double re) {
@@ -116,8 +86,6 @@ public class GeoidCalculator {
             a += sum * arn;
         }
         ac += cc[1] + p[2] * cc[2] + p[3] * (cc[3] * cosml[1] + cs[3] * sinml[1]);
-/*add haco=ac/100 to convert height anomaly on the ellipsoid to the undulation
-add -0.53m to make undulation refer to the wgs84 ellipsoid.*/
         return a * gm / (gr * re) + ac / 100 - .53;
     }
 
@@ -137,15 +105,6 @@ add -0.53m to make undulation refer to the wgs84 ellipsoid.*/
     }
 
     private void legfdn(long m, double theta, long nmx)
-/*this subroutine computes  all normalized legendre function
-in "rleg". order is always
-m, and colatitude is always theta  (radians). maximum deg
-is  nmx. all calculations in double precision.
-ir  must be set to zero before the first call to this sub.
-the dimensions of arrays  rleg must be at least equal to  nmx+1.
-Original programmer :Oscar L. Colombo, Dept. of Geodetic Science
-the Ohio State University, August 1980
-ineiev: I removed the derivatives, for they are never computed here*/
     {
         long nmx1 = nmx + 1, nmx2p = 2 * nmx + 1, m1 = m + 1, m2 = m + 2, m3 = m + 3, n, n1, n2;
         if (ir == 0) {
@@ -155,9 +114,8 @@ ineiev: I removed the derivatives, for they are never computed here*/
                 dirt[(int)n] = 1 / drts[(int)n];
             }
         }
-        cothet = Math.cos(theta);
-        sithet = Math.sin(theta);
-        /*compute the legendre functions*/
+        double cothet = Math.cos(theta);
+        double sithet = Math.sin(theta);
         rlnn[1] = 1;
         rlnn[2] = sithet * drts[3];
         for (n1 = 3; n1 <= m1; n1++) {
@@ -191,10 +149,6 @@ ineiev: I removed the derivatives, for they are never computed here*/
     }
 
     private void radgra(double lat, double lon, double[] rlat, double[] gr, double[] re)
-/*this subroutine computes geocentric distance to the point,
-the geocentric latitude,and
-an approximate value of normal gravity at the point based
-the constants of the wgs84(g873) system are used*/
     {
         double n, t1 = Math.sin(lat) * Math.sin(lat), t2, x, y, z;
         n = a / Math.sqrt(1 - e2 * t1);

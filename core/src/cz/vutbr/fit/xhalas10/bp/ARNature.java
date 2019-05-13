@@ -11,20 +11,22 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import cz.vutbr.fit.xhalas10.bp.earth.Compass;
 import cz.vutbr.fit.xhalas10.bp.earth.EarthCamera;
 import cz.vutbr.fit.xhalas10.bp.earth.Poi;
+import cz.vutbr.fit.xhalas10.bp.gui.UserInterface;
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IUtils;
 import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
-import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
+import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 import cz.vutbr.fit.xhalas10.bp.utils.TextureTextGenerator;
 
 public class ARNature extends ApplicationAdapter {
     private final double TOUCH_SCALE_FACTOR = 63.0 / 1920.0;
-    Stage stage;
+    private Stage stage;
     private float angle = 0;
     private boolean canRotateCamera = false;
-    private WorldManager worldManager;
+    private SceneManager sceneManager;
     private EarthCamera earthCamera;
-    private Utils utils;
+    private IUtils utils;
 
-    ARNature(Utils utils) {
+    ARNature(IUtils utils) {
         this.utils = utils;
     }
 
@@ -36,15 +38,15 @@ public class ARNature extends ApplicationAdapter {
         UserInterface userInterface = new UserInterface(this);
         userInterface.setToStage();
 
-        utils.getHardwareCamera().init();
-        earthCamera = new EarthCamera(utils.getHardwareCamera());
+        utils.getCameraPreview().init();
+        earthCamera = new EarthCamera(utils.getCameraPreview());
 
-        worldManager = WorldManager.getInstance();
-        worldManager.setWorldCamera(earthCamera);
+        sceneManager = SceneManager.getInstance();
+        sceneManager.setSceneCamera(earthCamera);
 
         Compass compass = new Compass();
-        worldManager.addWorldObject(compass, false);
-        OSMData.getInstance().getOSMNodes().forEach(node -> worldManager.addWorldObject(Poi.fromOSMNode(node), true));
+        sceneManager.addSceneObject(compass, false);
+        OSMData.getInstance().getOSMNodes().forEach(node -> sceneManager.addSceneObject(Poi.fromOSMNode(node), true));
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(stage);
@@ -94,37 +96,37 @@ public class ARNature extends ApplicationAdapter {
         earthCamera.setCorrectionAngle(angle);
         earthCamera.setSensorQuaternion(utils.getSensorManager().getQuaternion());
 
-        utils.getHardwareCamera().renderBackground();
+        utils.getCameraPreview().renderBackground();
 
         updateLocation();
-        worldManager.renderWorld();
+        sceneManager.renderScene();
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }
 
-    public void updateLocation() {
+    private void updateLocation() {
         if (!earthCamera.getLocation().equals(utils.getPersonLocation().getLocation())) {
             earthCamera.setPosition(utils.getPersonLocation().getLocation());
             earthCamera.calculateOriginRelativePosition();
-            worldManager.updateObjectsAndCache();
+            sceneManager.updateObjectsAndCache();
         }
     }
 
     public void downloadSurroundingData() {
-        OSMData.getInstance().getSurroundingData(earthCamera.getLocation(), earthCamera.getCamera().far / 100000.0f);
+        OSMData.getInstance().getSurroundingData(earthCamera.getLocation(), earthCamera.getCamera().far);
 
-        worldManager.clearManagedObjects();
-        OSMData.getInstance().getOSMNodes().forEach(node -> worldManager.addWorldObject(Poi.fromOSMNode(node), true));
-        worldManager.updateAll();
+        sceneManager.clearManagedObjects();
+        OSMData.getInstance().getOSMNodes().forEach(node -> sceneManager.addSceneObject(Poi.fromOSMNode(node), true));
+        sceneManager.updateSceneOriginAndObjects();
 
         utils.showToast("Surrounding data downloaded and set");
     }
 
     @Override
     public void dispose() {
-        utils.getHardwareCamera().dispose();
-        worldManager.dispose();
+        utils.getCameraPreview().dispose();
+        sceneManager.dispose();
         stage.dispose();
         Poi.disposeModel();
         TextureTextGenerator.dispose();
@@ -144,5 +146,9 @@ public class ARNature extends ApplicationAdapter {
 
     public void setCameraHeightOffset(float heightOffset) {
         earthCamera.setHeight(heightOffset);
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 }

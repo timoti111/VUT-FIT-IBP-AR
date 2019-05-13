@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp;
+package cz.vutbr.fit.xhalas10.bp.gui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -20,6 +20,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.utils.Array;
 
+import cz.vutbr.fit.xhalas10.bp.ARNature;
+
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeOut;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo;
@@ -29,16 +31,16 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 public class UserInterface {
     final private float animationSpeed = 0.3f;
     private Stage stage;
-    private Array<Actor> actors = new Array<Actor>();
+    private Array<Actor> actors = new Array<>();
     private Group mainMenu;
     private Group legend;
     private ImageButton settingsButton;
-    private ARNature ARNature;
+    private cz.vutbr.fit.xhalas10.bp.ARNature ARNature;
     private ImageTextButton calibrationDoneButton;
     private HorizontalGroup calibrationSlider;
 
     public UserInterface(final ARNature ARNature) {
-        this.stage = ARNature.stage;
+        this.stage = ARNature.getStage();
         this.ARNature = ARNature;
 
         actors.add(createCalibrationDoneButton());
@@ -56,25 +58,18 @@ public class UserInterface {
         actor.addAction(moveTo(toX, toY, animationSpeed));
     }
 
-    private boolean showActor(Actor actor) {
+    private void showActor(Actor actor) {
         if (!actor.isVisible()) {
             actor.getColor().a = 0;
             actor.setVisible(true);
 
             actor.addAction(fadeIn(animationSpeed));
-            return true;
         }
-        return false;
     }
 
     private boolean hideActor(final Actor actor) {
         if (actor.isVisible()) {
-            actor.addAction(sequence(fadeOut(animationSpeed), run(new Runnable() {
-                @Override
-                public void run() {
-                    actor.setVisible(false);
-                }
-            })));
+            actor.addAction(sequence(fadeOut(animationSpeed), run(() -> actor.setVisible(false))));
             return true;
         }
         return false;
@@ -270,7 +265,7 @@ public class UserInterface {
         }
     }
 
-    public Group createLegend() {
+    private Group createLegend() {
         legend = new Group();
         legend.setVisible(false);
         Image background = new Image(MySkin.getInstance().newDrawable("white", new Color(1.0f, 1.0f, 1.0f, 0.80480478f)));

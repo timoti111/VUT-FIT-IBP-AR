@@ -3,9 +3,11 @@ package cz.vutbr.fit.xhalas10.bp.utils;
 import com.badlogic.gdx.math.Vector3;
 
 public class Vector3d {
-    public double x, y, z;
+    private double x;
+    private double y;
+    private double z;
 
-    public Vector3d(Vector3d vector3d) {
+    private Vector3d(Vector3d vector3d) {
         this.x = vector3d.x;
         this.y = vector3d.y;
         this.z = vector3d.z;
@@ -59,7 +61,7 @@ public class Vector3d {
         return this.sub(a_vec.x, a_vec.y, a_vec.z);
     }
 
-    public Vector3d sub (double x, double y, double z) {
+    private Vector3d sub(double x, double y, double z) {
         return this.set(this.x - x, this.y - y, this.z - z);
     }
 

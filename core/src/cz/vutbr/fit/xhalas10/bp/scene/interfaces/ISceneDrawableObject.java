@@ -1,15 +1,16 @@
-package cz.vutbr.fit.xhalas10.bp.scene;
+package cz.vutbr.fit.xhalas10.bp.scene.interfaces;
 
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Pool;
 
-public interface IWorldDrawableObject extends IWorldObject, Disposable {
+public interface ISceneDrawableObject extends ISceneObject, Disposable {
     RenderableProvider getRenderableProvider();
 
-    int getPriority();
+    float getMaximumDrawableDistance();
 
     public void create();
 
     public boolean isAlive();
+
+    public String getName();
 }

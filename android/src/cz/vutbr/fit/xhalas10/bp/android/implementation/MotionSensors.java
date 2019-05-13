@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp;
+package cz.vutbr.fit.xhalas10.bp.android.implementation;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -8,7 +8,9 @@ import android.hardware.SensorManager;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
-public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.xhalas10.bp.SensorManager {
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IMotionSensors;
+
+public class MotionSensors implements SensorEventListener, IMotionSensors {
     private SensorManager sensorManager;
     private Sensor actualRotationSensor;
     private int samplingRate;
@@ -17,20 +19,20 @@ public class AndroidSensorManager implements SensorEventListener, cz.vutbr.fit.x
     private Quaternion quaternion;
 
 
-    AndroidSensorManager(SensorManager sensorManager) {
+    public MotionSensors(SensorManager sensorManager) {
         this.sensorManager = sensorManager;
         gameRotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         actualRotationSensor = gameRotationVectorSensor;
-        samplingRate = 16666;
+        samplingRate = (int)(1000000.0 / (double) CameraPreview.FPS);
         quaternion = new Quaternion();
     }
 
-    void onResume() {
+    public void onResume() {
         sensorManager.registerListener(this, actualRotationSensor, samplingRate);
     }
 
-    void onPause() {
+    public void onPause() {
         sensorManager.unregisterListener(this);
     }
 

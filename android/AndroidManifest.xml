@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="cz.vutbr.fit.xhalas10.bp" >
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -12,12 +13,13 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher2"
+        android:icon="@drawable/ic_launcher"
         android:isGame="true"
         android:appCategory="game"
         android:label="@string/app_name"
         android:usesCleartextTraffic="true"
-        android:theme="@style/GdxTheme" >
+        android:theme="@style/GdxTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
             android:name="cz.vutbr.fit.xhalas10.bp.AndroidLauncher"
             android:label="@string/app_name"

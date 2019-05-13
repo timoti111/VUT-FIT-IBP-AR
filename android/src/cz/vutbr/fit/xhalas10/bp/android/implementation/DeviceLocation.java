@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp;
+package cz.vutbr.fit.xhalas10.bp.android.implementation;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -24,11 +24,12 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
 
-import cz.vutbr.fit.xhalas10.bp.utils.GeoidCalculator;
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IDeviceLocation;
+import cz.vutbr.fit.xhalas10.bp.earth.wgs84.GeoidUndulation;
 
-public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.ConnectionCallbacks,
+public class DeviceLocation implements IDeviceLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
-    static final int REQUEST_CHECK_SETTINGS = 8465;
+    public static final int REQUEST_CHECK_SETTINGS = 8465;
     private static final long UPDATE_INTERVAL = 500, FASTEST_INTERVAL = 100;
     private static final float SMALLEST_DISPLACEMENT = 0.5f;
     private GoogleApiClient googleApiClient;
@@ -37,15 +38,15 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     private boolean requestingLocationUpdates = false;
     private LocationCallback locationCallback;
     private Activity activity;
-    private cz.vutbr.fit.xhalas10.bp.utils.Location actualLocation;
+    private cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location actualLocation;
     private double altitude;
     private double hAccuracy;
     private double vAccuracy;
 
-    AndroidPersonLocation(Activity activity) {
+    public DeviceLocation(Activity activity) {
         this.activity = activity;
-        actualLocation = new cz.vutbr.fit.xhalas10.bp.utils.Location();
-        // we build google api client
+        actualLocation = new cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location();
+
         googleApiClient = new GoogleApiClient.Builder(activity).
                 addApi(LocationServices.API).
                 addConnectionCallbacks(this).
@@ -68,7 +69,7 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
             if (location.hasAltitude())
-                altitude = location.getAltitude() - GeoidCalculator.getInstance().getHeightFromLatAndLon(latitude, longitude);
+                altitude = location.getAltitude() - GeoidUndulation.getInstance().getUndulation(latitude, longitude);
             if (location.hasAccuracy())
                 hAccuracy = location.getAccuracy();
             if (location.hasVerticalAccuracy())
@@ -85,18 +86,8 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     }
 
     @Override
-    public cz.vutbr.fit.xhalas10.bp.utils.Location getLocation() {
+    public cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location getLocation() {
         return actualLocation;
-    }
-
-    @Override
-    public double getHorizontalAccuracy() {
-        return hAccuracy;
-    }
-
-    @Override
-    public double getVerticalAccuracy() {
-        return vAccuracy;
     }
 
     @SuppressLint("MissingPermission")
@@ -140,14 +131,14 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
 
     }
 
-    void onResume() {
+    public void onResume() {
         if (googleApiClient != null && !googleApiClient.isConnected()) {
             googleApiClient.connect();
         }
         startLocationUpdates();
     }
 
-    void onPause() {
+    public void onPause() {
         stopLocationUpdates();
         if (googleApiClient != null && googleApiClient.isConnected()) {
             googleApiClient.disconnect();
@@ -155,7 +146,7 @@ public class AndroidPersonLocation implements PersonLocation, GoogleApiClient.Co
     }
 
     @SuppressLint("MissingPermission")
-    void startLocationUpdates() {
+    public void startLocationUpdates() {
         if (!requestingLocationUpdates && checkPermissions() && locationRequest != null) {
             fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
             requestingLocationUpdates = true;

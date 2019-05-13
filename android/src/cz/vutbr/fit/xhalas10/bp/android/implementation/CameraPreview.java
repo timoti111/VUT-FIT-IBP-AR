@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp;
+package cz.vutbr.fit.xhalas10.bp.android.implementation;
 
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -30,9 +30,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import android.support.annotation.NonNull;
 
-public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableListener, HardwareCamera {
-    private SurfaceTexture mSTexture;
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
 
+public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, ICameraPreview {
+    static final int FPS = 60;
+
+    private SurfaceTexture mSTexture;
     private boolean mUpdateST = false;
 
     private String mCameraID;
@@ -42,7 +45,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
     private CameraCaptureSession mCaptureSession;
     private CaptureRequest.Builder mPreviewRequestBuilder;
     private Size mPreviewSize = new Size(1920, 1080);
-    private Range<Integer> fpsRange = Range.create(60, 60);
+    private Range<Integer> fpsRange = Range.create(FPS, FPS);
     private int[] texture = new int[1];
 
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
@@ -75,7 +78,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
     private ShaderProgram shader; //Our shader
     private Mesh mesh; //Our mesh that we will draw the texture on
 
-    AndroidHardwareCamera(CameraManager cameraManager) {
+    public CameraPreview(CameraManager cameraManager) {
         this.cameraManager = cameraManager;
     }
 
@@ -181,7 +184,6 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
 
             mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             mPreviewRequestBuilder.addTarget(surface);
-
             mCameraDevice.createCaptureSession(Collections.singletonList(surface),
                     new CameraCaptureSession.StateCallback() {
                         @Override
@@ -192,7 +194,7 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
                                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                                 mPreviewRequestBuilder.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
 
@@ -212,17 +214,13 @@ public class AndroidHardwareCamera implements SurfaceTexture.OnFrameAvailableLis
         }
     }
 
-    void onResume() {
+    public void onResume() {
         startBackgroundThread();
-        // When the screen is turned off and turned back on, the SurfaceTexture is already
-        // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
-        // a camera and start preview from here (otherwise, we wait until the surface is ready in
-        // the SurfaceTextureListener).
         if (mPreviewRequestBuilder != null)
             openCamera();
     }
 
-    void onPause() {
+    public void onPause() {
         closeCamera();
         stopBackgroundThread();
     }

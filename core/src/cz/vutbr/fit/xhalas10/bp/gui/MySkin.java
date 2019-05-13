@@ -1,4 +1,4 @@
-package cz.vutbr.fit.xhalas10.bp;
+package cz.vutbr.fit.xhalas10.bp.gui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -17,9 +17,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
 
 public class MySkin extends Skin {
-    public static final int FONT_SIZE = 40;
+    private static final int FONT_SIZE = 40;
     private Color fontColorWhite = Color.WHITE;
-    public Color fontColorDark = new Color(0.1411764705882353f, 0.1411764705882353f, 0.1411764705882353f, 1.0f);
+    private Color fontColorDark = new Color(0.1411764705882353f, 0.1411764705882353f, 0.1411764705882353f, 1.0f);
     private Color up = Color.LIGHT_GRAY;
     private Color down = Color.DARK_GRAY;
     private Color disabled = Color.GRAY;
@@ -56,7 +56,8 @@ public class MySkin extends Skin {
         pixmap.fill();
         this.add("white", new Texture(pixmap));
         this.add("fontSize", FONT_SIZE);
-        this.add("default", FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", FONT_SIZE));
+        this.add("default", FontGenerator.generateFont("fonts/OpenSans-Regular.ttf", FONT_SIZE, false));
+        this.add("default-bold", FontGenerator.generateFont("fonts/OpenSans-Bold.ttf", FONT_SIZE, true));
         this.add("checkedCheckbox", new Texture(Gdx.files.internal("check-box.png")));
         this.add("uncheckedCheckbox", new Texture(Gdx.files.internal("blank-check-box.png")));
 

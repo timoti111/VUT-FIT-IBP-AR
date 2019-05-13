@@ -6,29 +6,23 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
-import cz.vutbr.fit.xhalas10.bp.HardwareCamera;
-import cz.vutbr.fit.xhalas10.bp.scene.IWorldCamera;
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
+import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneCamera;
 
-public class EarthCamera extends EarthObject implements IWorldCamera {
-    Camera camera;
-    float height;
-    Quaternion sensorQuaternion;
-    Quaternion angleCorrectionQuaternion;
+public class EarthCamera extends EarthObject implements ISceneCamera {
+    private Camera camera;
+    private float height;
+    private Quaternion sensorQuaternion;
+    private Quaternion angleCorrectionQuaternion;
 
-    public EarthCamera(HardwareCamera hardwareCamera) {
-        this.camera = camera;
+    public EarthCamera(ICameraPreview hardwareCamera) {
         double ratio = (double) Gdx.graphics.getWidth() / (double)Gdx.graphics.getHeight();
-        double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double)hardwareCamera.getCameraFocalLength())));
+        double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double) hardwareCamera.getCameraFocalLength())));
         camera = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.01f;
-        camera.far = 15000f;
+        camera.far = 20000f;
         angleCorrectionQuaternion = new Quaternion();
         setCorrectionAngle(0.0f);
-    }
-
-    @Override
-    public void setPosition(double latitude, double longitude, double altitude) {
-        super.setPosition(latitude, longitude, altitude);
     }
 
     private static Quaternion tmpQuat = new Quaternion();
@@ -58,5 +52,20 @@ public class EarthCamera extends EarthObject implements IWorldCamera {
     @Override
     public Camera getCamera() {
         return camera;
+    }
+
+    @Override
+    public Vector3 getUpVector() {
+        return getLocation().getUpPointingVector();
+    }
+
+    @Override
+    public Vector3 getSouthVector() {
+        return getLocation().getSouthPointingVector();
+    }
+
+    @Override
+    public Vector3 getEastVector() {
+        return getLocation().getEastPointingVector();
     }
 }

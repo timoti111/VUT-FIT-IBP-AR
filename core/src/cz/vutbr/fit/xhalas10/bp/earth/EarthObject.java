@@ -1,39 +1,38 @@
 package cz.vutbr.fit.xhalas10.bp.earth;
 
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
-import cz.vutbr.fit.xhalas10.bp.scene.IWorldObject;
-import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
-import cz.vutbr.fit.xhalas10.bp.scene.WorldObjectFilter;
-import cz.vutbr.fit.xhalas10.bp.utils.Location;
+import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneObject;
+import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
+import cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
-public abstract class EarthObject implements IWorldObject {
-    protected Vector3 originRelativePosition;
-    protected Vector3d worldPosition;
-    Location location;
+public abstract class EarthObject implements ISceneObject {
+    Vector3 originRelativePosition;
+    private Vector3d scenePosition;
+    private Location location;
 
-    public EarthObject() {
+    EarthObject() {
         originRelativePosition = new Vector3();
-        worldPosition = new Vector3d();
+        scenePosition = new Vector3d();
         location = new Location();
     }
 
-    public void setPosition(double latitude, double longitude, double altitude) {
+    void setPosition(double latitude, double longitude, double altitude) {
         location.set(latitude, longitude, altitude);
-        worldPosition.set(location.toCartesian());
+        scenePosition.set(location.toCartesian());
     }
 
     public void setPosition(Location location) {
         this.location.set(location);
-        worldPosition.set(this.location.toCartesian());
+        scenePosition.set(this.location.toCartesian());
     }
 
     @Override
     public void calculateOriginRelativePosition() {
-        originRelativePosition.set(worldPosition.cpy().sub(WorldManager.getInstance().getOrigin()).toVector3());
-        originRelativePosition.mul(WorldManager.getInstance().getCorrectionMatrix());
+        originRelativePosition.set(scenePosition.cpy().sub(SceneManager.getInstance().getOrigin()).toVector3());
+        originRelativePosition.mul(SceneManager.getInstance().getCorrectionMatrix());
+        originRelativePosition.scl((float) SceneManager.getScale());
     }
 
     @Override
@@ -46,22 +45,7 @@ public abstract class EarthObject implements IWorldObject {
     }
 
     @Override
-    public Vector3d getWorldPosition() {
-        return worldPosition;
-    }
-
-    @Override
-    public Vector3 getUpVector() {
-        return location.getUpPointingVector();
-    }
-
-    @Override
-    public Vector3 getNorthVector() {
-        return location.getNorthPointingVector();
-    }
-
-    @Override
-    public Vector3 getEastVector() {
-        return location.getEastPointingVector();
+    public Vector3d getScenePosition() {
+        return scenePosition;
     }
 }

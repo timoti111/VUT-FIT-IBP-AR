@@ -11,11 +11,11 @@ import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
-import cz.vutbr.fit.xhalas10.bp.MySkin;
-import cz.vutbr.fit.xhalas10.bp.scene.IWorldDrawableObject;
-import cz.vutbr.fit.xhalas10.bp.scene.WorldManager;
+import cz.vutbr.fit.xhalas10.bp.gui.MySkin;
+import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
+import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 
-public class Compass extends EarthObject implements IWorldDrawableObject {
+public class Compass extends EarthObject implements ISceneDrawableObject {
     private static final float size = 0.6f;
     private static Model model = buildPoiModel();
     private ModelInstance modelInstance;
@@ -45,7 +45,7 @@ public class Compass extends EarthObject implements IWorldDrawableObject {
 
     @Override
     public void update() {
-        modelInstance.transform.setTranslation(WorldManager.getInstance().getWorldCamera().getCamera().position);
+        modelInstance.transform.setTranslation(SceneManager.getInstance().getSceneCamera().getCamera().position);
     }
 
     @Override
@@ -54,8 +54,8 @@ public class Compass extends EarthObject implements IWorldDrawableObject {
     }
 
     @Override
-    public int getPriority() {
-        return 0;
+    public float getMaximumDrawableDistance() {
+        return Float.POSITIVE_INFINITY;
     }
 
     @Override
@@ -66,6 +66,11 @@ public class Compass extends EarthObject implements IWorldDrawableObject {
     @Override
     public boolean isAlive() {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return "compass";
     }
 
     @Override

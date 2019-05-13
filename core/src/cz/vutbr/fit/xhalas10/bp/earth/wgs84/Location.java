@@ -1,6 +1,8 @@
-package cz.vutbr.fit.xhalas10.bp.utils;
+package cz.vutbr.fit.xhalas10.bp.earth.wgs84;
 
 import com.badlogic.gdx.math.Vector3;
+
+import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
 public class Location {
     private double latitude, longitude, altitude, WGS84altitude;
@@ -9,7 +11,7 @@ public class Location {
     private static final double E_SQ = 0.00669437999014;
     private Vector3d cartesian = new Vector3d();
     private Vector3 normalVector = new Vector3();
-    private Vector3 northVector = new Vector3();
+    private Vector3 southVector = new Vector3();
     private Vector3 eastVector = new Vector3();
     private boolean updateCartesian = true;
     private boolean updateLocalSpaceVectors = true;
@@ -25,7 +27,6 @@ public class Location {
     }
 
     public Location() {
-
     }
 
     public void set(double latitude, double longitude, double altitude) {
@@ -45,7 +46,7 @@ public class Location {
     }
 
     private void updateWGS84altitude() {
-        WGS84altitude = altitude + GeoidCalculator.getInstance().getHeightFromLatAndLon(latitude, longitude);
+        WGS84altitude = altitude + GeoidUndulation.getInstance().getUndulation(latitude, longitude);
     }
 
     public double getLatitude() {
@@ -56,7 +57,7 @@ public class Location {
         return longitude;
     }
 
-    public double getAltitude() {
+    private double getAltitude() {
         return altitude;
     }
 
@@ -80,7 +81,7 @@ public class Location {
         updateCosSin();
         if (updateLocalSpaceVectors) {
             normalVector.set((float)(cosLat * sinLon), (float)(cosLat * cosLon), (float)-sinLat).nor();
-            northVector.set((float)(-sinLat * sinLon), (float)(-sinLat * cosLon), (float)-cosLat).nor();
+            southVector.set((float)(sinLat * sinLon), (float)(sinLat * cosLon), (float)cosLat).nor();
             eastVector.set((float)cosLon, (float)-sinLon, 0.0f).nor();
             updateLocalSpaceVectors = false;
         }
@@ -110,18 +111,18 @@ public class Location {
         return false;
     }
 
-    public Vector3 getNorthPointingVector() {
+    public Vector3 getSouthPointingVector() {
         updateLocalSpaceVectors();
-        return northVector.cpy();
+        return southVector;
     }
 
     public Vector3 getEastPointingVector() {
         updateLocalSpaceVectors();
-        return eastVector.cpy();
+        return eastVector;
     }
 
     public Vector3 getUpPointingVector() {
         updateLocalSpaceVectors();
-        return normalVector.cpy();
+        return normalVector;
     }
 }

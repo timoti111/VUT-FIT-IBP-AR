@@ -19,11 +19,19 @@ public class Node implements Serializable {
         id = Long.parseLong(node.getAttribute("id"));
         location = new LatLng(Double.parseDouble(node.getAttribute("lat")), Double.parseDouble(node.getAttribute("lon")));
         NodeList tags = node.getElementsByTagName("tag");
+        elevation = Double.NaN;
         for (int i = 0; i < tags.getLength(); i++) {
             Element tag = (Element)tags.item(i);
+            if (tag.getAttribute("k").equals("ele")) {
+                try {
+                    elevation = Double.parseDouble(tag.getAttribute("v").replaceAll("[^\\d.-]", ""));
+                }
+                catch (NumberFormatException exception) {
+                    elevation = Double.NaN;
+                }
+            }
             this.tags.put(tag.getAttribute("k"), tag.getAttribute("v"));
         }
-        elevation = Double.NaN;
     }
 
     public Long getId() {
@@ -45,7 +53,6 @@ public class Node implements Serializable {
     public void setElevation(double elevation) {
         this.elevation = elevation;
     }
-
 
     public boolean hasElevation() {
         return !Double.isNaN(elevation);
