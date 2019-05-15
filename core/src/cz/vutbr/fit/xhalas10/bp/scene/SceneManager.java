@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.scene;
 
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
@@ -13,8 +18,11 @@ import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
 public class SceneManager implements Disposable {
-    private ISceneCamera sceneCamera;
+    private static final float SCALE = 0.1f;
+    private static final double MAXIMUM_CAMERA_DISTANCE = 20.0f;
     private static ModelCache modelCache;
+    private static SceneManager instance = new SceneManager();
+    private ISceneCamera sceneCamera;
     private ModelBatch modelBatch;
     private Vector3d origin;
     private Matrix4 correctionMatrix;
@@ -22,15 +30,6 @@ public class SceneManager implements Disposable {
     private ObjectSet<ISceneDrawableObject> allObjects;
     private Iterable<ISceneDrawableObject> objectsToDraw;
     private SceneObjectFilter sceneObjectFilter;
-
-    private static final float SCALE = 0.1f;
-    private static final double MAXIMUM_CAMERA_DISTANCE = 20.0f;
-
-    private static SceneManager instance = new SceneManager();
-
-    public static SceneManager getInstance() {
-        return instance;
-    }
 
     private SceneManager() {
         modelCache = new ModelCache();
@@ -42,9 +41,14 @@ public class SceneManager implements Disposable {
         sceneObjectFilter = new SceneObjectFilter();
     }
 
+    public static SceneManager getInstance() {
+        return instance;
+    }
+
     public static double getMaximumCameraDistance() {
         return MAXIMUM_CAMERA_DISTANCE;
     }
+
     public static double getScale() {
         return SCALE;
     }
@@ -57,12 +61,8 @@ public class SceneManager implements Disposable {
         return correctionMatrix;
     }
 
-    public void setSceneCamera(ISceneCamera sceneCamera) {
-        this.sceneCamera = sceneCamera;
-    }
-
     public void addSceneObject(ISceneDrawableObject sceneObject, boolean managed) {
-        if(managed)
+        if (managed)
             allObjects.add(sceneObject);
         else
             unmanagedObjects.add(sceneObject);
@@ -122,9 +122,12 @@ public class SceneManager implements Disposable {
         updateObjectsAndCache();
     }
 
-
     public ISceneCamera getSceneCamera() {
         return sceneCamera;
+    }
+
+    public void setSceneCamera(ISceneCamera sceneCamera) {
+        this.sceneCamera = sceneCamera;
     }
 
     @Override

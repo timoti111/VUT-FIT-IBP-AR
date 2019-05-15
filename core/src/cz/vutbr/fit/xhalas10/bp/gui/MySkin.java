@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.gui;
 
 import com.badlogic.gdx.Gdx;
@@ -18,16 +23,13 @@ import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
 
 public class MySkin extends Skin {
     private static final int FONT_SIZE = 40;
+    private static final MySkin ourInstance = new MySkin();
     private Color fontColorWhite = Color.WHITE;
     private Color fontColorDark = new Color(0.1411764705882353f, 0.1411764705882353f, 0.1411764705882353f, 1.0f);
     private Color up = Color.LIGHT_GRAY;
     private Color down = Color.DARK_GRAY;
     private Color disabled = Color.GRAY;
 
-    private static final MySkin ourInstance = new MySkin();
-    public static MySkin getInstance() {
-        return ourInstance;
-    }
     private MySkin() {
         super();
 
@@ -104,6 +106,10 @@ public class MySkin extends Skin {
         sliderStyle.knob = this.newDrawable("knob", up);
         sliderStyle.knobDown = this.newDrawable("knob", down);
         this.add("default-vertical", sliderStyle);
+    }
+
+    public static MySkin getInstance() {
+        return ourInstance;
     }
 
     private void setDrawableSize(Drawable drawable) {

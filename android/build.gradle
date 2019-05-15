@@ -26,7 +26,7 @@ android {
     }
     defaultConfig {
         applicationId "cz.vutbr.fit.xhalas10.bp"
-        minSdkVersion 26
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -126,7 +126,7 @@ eclipse {
     project {
         name = appName + "-android"
         natures 'com.android.ide.eclipse.adt.AndroidNature'
-        buildCommands.clear();
+        buildCommands.clear()
         buildCommand "com.android.ide.eclipse.adt.ResourceManagerBuilder"
         buildCommand "com.android.ide.eclipse.adt.PreCompilerBuilder"
         buildCommand "org.eclipse.jdt.core.javabuilder"
@@ -136,14 +136,14 @@ eclipse {
 // sets up the Android Idea project, using the old Ant based build.
 idea {
     module {
-        sourceDirs += file("src");
+        sourceDirs += file("src")
         scopes = [COMPILE: [plus: [project.configurations.compile]]]
 
         iml {
             withXml {
                 def node = it.asNode()
-                def builder = NodeBuilder.newInstance();
-                builder.current = node;
+                def builder = NodeBuilder.newInstance()
+                builder.current = node
                 builder.component(name: "FacetManager") {
                     facet(type: "android", name: "Android") {
                         configuration {

@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -114,6 +119,8 @@ public class ARNature extends ApplicationAdapter {
     }
 
     public void downloadSurroundingData() {
+        utils.showToast("Download of surrounding data started");
+
         OSMData.getInstance().getSurroundingData(earthCamera.getLocation(), earthCamera.getCamera().far);
 
         sceneManager.clearManagedObjects();

@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.osm;
 
 import com.badlogic.gdx.Gdx;
@@ -32,25 +37,21 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.vutbr.fit.xhalas10.bp.osm.model.Node;
 import cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location;
+import cz.vutbr.fit.xhalas10.bp.osm.model.Node;
 
 public class OSMData {
+    private final static String DEFAULT_MAP = "maps/default.map";
+    private static final OSMData ourInstance = new OSMData();
     private HashMap<Long, Node> nodes;
     private GeoApiContext context;
-    private final static String DEFAULT_MAP = "maps/default.map";
-
-    private static final OSMData ourInstance = new OSMData();
-    public static OSMData getInstance() {
-        return ourInstance;
-    }
 
     private OSMData() {
         if (Gdx.files.local(DEFAULT_MAP).exists()) {
             InputStream inputStream = Gdx.files.local(DEFAULT_MAP).read();
             try {
                 ObjectInputStream is = new ObjectInputStream(inputStream);
-                nodes = (HashMap<Long, Node>)is.readObject();
+                nodes = (HashMap<Long, Node>) is.readObject();
                 is.close();
                 return;
             } catch (Exception e) {
@@ -59,7 +60,11 @@ public class OSMData {
         }
         nodes = new HashMap<>();
     }
-    
+
+    public static OSMData getInstance() {
+        return ourInstance;
+    }
+
     public void getSurroundingData(Location location, double vicinityRangeMeters) {
         DecimalFormat format = new DecimalFormat("##0.0000000", DecimalFormatSymbols.getInstance(Locale.ENGLISH)); //$NON-NLS-1$
         String south = format.format(location.getLatitude() - vicinityRangeMeters);
@@ -83,13 +88,12 @@ public class OSMData {
         ArrayList<Node> toDetermineElevation = new ArrayList<>();
         NodeList nodeList = doc.getElementsByTagName("node");
         for (int i = 0; i < nodeList.getLength(); i++) {
-            Element element = (Element)nodeList.item(i);
+            Element element = (Element) nodeList.item(i);
             if (!nodes.containsKey(Long.parseLong(element.getAttribute("id")))) {
                 Node node = new Node(element);
                 if (!node.hasElevation()) {
                     toDetermineElevation.add(node);
-                }
-                else {
+                } else {
                     nodes.put(node.getId(), node);
                 }
             }
@@ -126,8 +130,8 @@ public class OSMData {
         try {
             if (context == null) {
                 this.context = new GeoApiContext.Builder()
-                    .apiKey("AIzaSyBQaK3OYcPfdtMaVZUbzjVLfegmOOc7K-E")
-                    .build();
+                        .apiKey("AIzaSyBQaK3OYcPfdtMaVZUbzjVLfegmOOc7K-E")
+                        .build();
             }
 
             results = ElevationApi.getByPoints(context, encodedPolyline).await();
@@ -159,26 +163,20 @@ public class OSMData {
 
     static class OverPassWrapperAPI {
         private static final String OVERPASS_API = "https://overpass.kumi.systems/api/interpreter";
+
         /**
-         *
          * @param query the overpass query
          * @return the nodes in the formulated query
-         * @throws IOException
-         * @throws ParserConfigurationException
-         * @throws SAXException
          */
         static Document getNodesViaOverpass(String query) throws IOException, ParserConfigurationException, SAXException {
-            String hostname = OVERPASS_API;
-            String queryString = query;
-
-            URL osm = new URL(hostname);
+            URL osm = new URL(OVERPASS_API);
             HttpURLConnection connection = (HttpURLConnection) osm.openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             DataOutputStream printout = new DataOutputStream(connection.getOutputStream());
-            printout.writeBytes("data=" + URLEncoder.encode(queryString, "utf-8"));
+            printout.writeBytes("data=" + URLEncoder.encode(query, "utf-8"));
             printout.flush();
             printout.close();
 

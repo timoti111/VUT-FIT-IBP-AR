@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.scene;
 
 import com.badlogic.gdx.math.MathUtils;
@@ -13,7 +18,7 @@ class SceneObjectFilter {
     private Array<Float> sectorConstants;
     private Array<ISceneDrawableObject> filteredObjects;
 
-    public SceneObjectFilter() {
+    SceneObjectFilter() {
         sectors = new Array<>(quadrantHorizontalParts);
         filteredObjects = new Array<>();
 
@@ -37,7 +42,7 @@ class SceneObjectFilter {
         sectorConstants.add(Float.NEGATIVE_INFINITY);
     }
 
-    public void update(Iterable<ISceneDrawableObject> sceneDrawableObjects) {
+    void update(Iterable<ISceneDrawableObject> sceneDrawableObjects) {
         reset();
         for (ISceneDrawableObject sceneDrawableObject : sceneDrawableObjects) {
             if (sceneDrawableObject.isAlive())
@@ -48,7 +53,7 @@ class SceneObjectFilter {
         }
     }
 
-    public Iterable<ISceneDrawableObject> getFilteredObjects() {
+    Iterable<ISceneDrawableObject> getFilteredObjects() {
         filteredObjects.clear();
         for (Sector sector : sectors) {
             for (ISceneDrawableObject visibleObject : sector.getVisibleObjects()) {
@@ -110,15 +115,12 @@ class Sector {
         float newSceneDrawableObjectDistance = newSceneDrawableObject.getOriginRelativePosition().len() / (float) SceneManager.getScale();
         int index = determineHeightIndex(newSceneDrawableObject.getOriginRelativePosition());
         ISceneDrawableObject actualSceneDrawableObject = visibleObjects.get(index);
-        if (newSceneDrawableObject.getName().contains("Kľak (")) {
-            Float.isNaN(Float.NaN);
-        }
+
         if (actualSceneDrawableObject == null) {
             if (newSceneDrawableObjectDistance < newSceneDrawableObject.getMaximumDrawableDistance())
                 if (newSceneDrawableObjectDistance < SceneManager.getInstance().getSceneCamera().getCamera().far)
                     visibleObjects.set(index, newSceneDrawableObject);
-        }
-        else {
+        } else {
             float actualSceneDrawableObjectDistance = actualSceneDrawableObject.getOriginRelativePosition().len() / (float) SceneManager.getScale();
             float actualSceneDrawableObjectAngle = (float) Math.asin((actualSceneDrawableObject.getOriginRelativePosition().y / SceneManager.getScale()) / actualSceneDrawableObjectDistance);
             float newSceneDrawableObjectAngle = (float) Math.asin((newSceneDrawableObject.getOriginRelativePosition().y / SceneManager.getScale()) / newSceneDrawableObjectDistance);

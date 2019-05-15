@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.android.implementation;
 
 import android.Manifest;
@@ -24,8 +29,8 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.Task;
 
-import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IDeviceLocation;
 import cz.vutbr.fit.xhalas10.bp.earth.wgs84.GeoidUndulation;
+import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IDeviceLocation;
 
 public class DeviceLocation implements IDeviceLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
@@ -40,8 +45,6 @@ public class DeviceLocation implements IDeviceLocation, GoogleApiClient.Connecti
     private Activity activity;
     private cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location actualLocation;
     private double altitude;
-    private double hAccuracy;
-    private double vAccuracy;
 
     public DeviceLocation(Activity activity) {
         this.activity = activity;
@@ -70,10 +73,6 @@ public class DeviceLocation implements IDeviceLocation, GoogleApiClient.Connecti
             double longitude = location.getLongitude();
             if (location.hasAltitude())
                 altitude = location.getAltitude() - GeoidUndulation.getInstance().getUndulation(latitude, longitude);
-            if (location.hasAccuracy())
-                hAccuracy = location.getAccuracy();
-            if (location.hasVerticalAccuracy())
-                vAccuracy = location.getVerticalAccuracyMeters();
             actualLocation.set(latitude, longitude, altitude);
         }
     }

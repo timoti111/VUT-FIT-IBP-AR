@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.android.implementation;
 
 import android.graphics.SurfaceTexture;
@@ -11,6 +16,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.opengl.GLES11Ext;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Range;
 import android.util.Size;
@@ -28,7 +34,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import android.support.annotation.NonNull;
 
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
 

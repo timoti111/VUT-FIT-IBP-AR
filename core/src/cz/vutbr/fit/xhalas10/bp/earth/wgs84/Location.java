@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.earth.wgs84;
 
 import com.badlogic.gdx.math.Vector3;
@@ -5,20 +10,20 @@ import com.badlogic.gdx.math.Vector3;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
 public class Location {
-    private double latitude, longitude, altitude, WGS84altitude;
     private static final double A = 6378137.0;
     private static final double B_SQ_DIV_A_SQ = 0.99330562;
     private static final double E_SQ = 0.00669437999014;
-    private Vector3d cartesian = new Vector3d();
-    private Vector3 normalVector = new Vector3();
-    private Vector3 southVector = new Vector3();
-    private Vector3 eastVector = new Vector3();
-    private boolean updateCartesian = true;
-    private boolean updateLocalSpaceVectors = true;
-    private boolean updateCosSin = true;
+    private double latitude, longitude, altitude, WGS84altitude;
+    private Vector3d cartesian;
+    private Vector3 normalVector, southVector, eastVector;
+    private boolean updateCartesian, updateLocalSpaceVectors, updateCosSin;
     private double cosLat, cosLon, sinLat, sinLon;
 
     public Location(double latitude, double longitude, double altitude) {
+        this.cartesian = new Vector3d();
+        this.normalVector = new Vector3();
+        this.southVector = new Vector3();
+        this.eastVector = new Vector3();
         set(latitude, longitude, altitude);
     }
 
@@ -42,7 +47,17 @@ public class Location {
         this.longitude = location.longitude;
         this.altitude = location.altitude;
         this.WGS84altitude = location.WGS84altitude;
-        setUpdate();
+        this.cartesian = location.cartesian.cpy();
+        this.normalVector = location.normalVector.cpy();
+        this.southVector = location.southVector.cpy();
+        this.eastVector = location.eastVector.cpy();
+        this.updateCartesian = location.updateCartesian;
+        this.updateLocalSpaceVectors = location.updateLocalSpaceVectors;
+        this.updateCosSin = location.updateCosSin;
+        this.cosLat = location.cosLat;
+        this.cosLon = location.cosLon;
+        this.sinLat = location.sinLat;
+        this.sinLon = location.sinLon;
     }
 
     private void updateWGS84altitude() {
@@ -80,9 +95,9 @@ public class Location {
     private void updateLocalSpaceVectors() {
         updateCosSin();
         if (updateLocalSpaceVectors) {
-            normalVector.set((float)(cosLat * sinLon), (float)(cosLat * cosLon), (float)-sinLat).nor();
-            southVector.set((float)(sinLat * sinLon), (float)(sinLat * cosLon), (float)cosLat).nor();
-            eastVector.set((float)cosLon, (float)-sinLon, 0.0f).nor();
+            normalVector.set((float) (cosLat * sinLon), (float) (cosLat * cosLon), (float) -sinLat).nor();
+            southVector.set((float) (sinLat * sinLon), (float) (sinLat * cosLon), (float) cosLat).nor();
+            eastVector.set((float) cosLon, (float) -sinLon, 0.0f).nor();
             updateLocalSpaceVectors = false;
         }
     }
@@ -103,7 +118,7 @@ public class Location {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Location) {
-            Location location = (Location)o;
+            Location location = (Location) o;
             return Double.compare(location.getLatitude(), latitude) == 0 &&
                     Double.compare(location.getLongitude(), longitude) == 0 &&
                     Double.compare(location.getAltitude(), altitude) == 0;

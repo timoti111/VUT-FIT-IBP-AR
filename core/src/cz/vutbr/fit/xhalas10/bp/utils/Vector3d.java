@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.utils;
 
 import com.badlogic.gdx.math.Vector3;
@@ -57,7 +62,7 @@ public class Vector3d {
         return this;
     }
 
-    public Vector3d sub (final Vector3d a_vec) {
+    public Vector3d sub(final Vector3d a_vec) {
         return this.sub(a_vec.x, a_vec.y, a_vec.z);
     }
 
@@ -66,7 +71,7 @@ public class Vector3d {
     }
 
     public Vector3 toVector3() {
-        return new Vector3((float)this.x, (float)this.y, (float)this.z);
+        return new Vector3((float) this.x, (float) this.y, (float) this.z);
     }
 
 

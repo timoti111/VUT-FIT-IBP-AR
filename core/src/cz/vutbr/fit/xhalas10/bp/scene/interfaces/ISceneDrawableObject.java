@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.scene.interfaces;
 
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
@@ -8,9 +13,9 @@ public interface ISceneDrawableObject extends ISceneObject, Disposable {
 
     float getMaximumDrawableDistance();
 
-    public void create();
+    void create();
 
-    public boolean isAlive();
+    boolean isAlive();
 
-    public String getName();
+    String getName();
 }

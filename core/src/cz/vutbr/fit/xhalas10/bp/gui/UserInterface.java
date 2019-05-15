@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.gui;
 
 import com.badlogic.gdx.Gdx;
@@ -29,6 +34,8 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.run;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 
 public class UserInterface {
+    private static float offsetValue = 0.0f;
+    private static float lastValue = 0.0f;
     final private float animationSpeed = 0.3f;
     private Stage stage;
     private Array<Actor> actors = new Array<>();
@@ -81,9 +88,6 @@ public class UserInterface {
         return button;
     }
 
-    private static float offsetValue = 0.0f;
-    private static float lastValue = 0.0f;
-
     private HorizontalGroup createHeightCalibrationSlider() {
         calibrationSlider = new HorizontalGroup();
         final Slider slider = new Slider(-15.0f, 15.0f, 0.5f, true, MySkin.getInstance());
@@ -93,10 +97,10 @@ public class UserInterface {
         group.setHeight(Gdx.graphics.getHeight() / 2.0f);
         group.setWidth(slider.getWidth());
 
-        final Label label = new Label(Float.toString(slider.getValue()) + "m", MySkin.getInstance(), "labelWhite");
+        final Label label = new Label(slider.getValue() + "m", MySkin.getInstance(), "labelWhite");
 
         slider.setHeight(Gdx.graphics.getHeight() / 2.0f);
-        calibrationSlider.addListener(new InputListener(){
+        calibrationSlider.addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 lastValue = 0.0f;
@@ -107,7 +111,7 @@ public class UserInterface {
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 offsetValue += lastValue - slider.getValue();
                 lastValue = slider.getValue();
-                label.setText(Float.toString(offsetValue) + "m");
+                label.setText(offsetValue + "m");
                 ARNature.setCameraHeightOffset(offsetValue);
             }
 
@@ -133,15 +137,16 @@ public class UserInterface {
         calibrationDoneButton.setSize(Gdx.graphics.getWidth() / 6.0f, Gdx.graphics.getHeight() / 6.0f);
         calibrationDoneButton.setPosition(Gdx.graphics.getWidth() - calibrationDoneButton.getWidth() * 1.2f, calibrationDoneButton.getHeight() * 0.2f);
         calibrationDoneButton.setVisible(false);
-        calibrationDoneButton.addListener(new InputListener(){
+        calibrationDoneButton.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 hideActor(calibrationDoneButton);
                 hideActor(calibrationSlider);
                 ARNature.canRotateCamera(false);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return calibrationDoneButton.isVisible();
             }
         });
@@ -155,13 +160,14 @@ public class UserInterface {
         float height = width * texture.getHeight() / texture.getWidth();
         settingsButton = new ImageButton(MySkin.getInstance(), "settingsButtonStyle");
         settingsButton.setSize(width, height);
-        settingsButton.addListener(new InputListener(){
+        settingsButton.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f, 0.0f, 0.0f);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -173,13 +179,14 @@ public class UserInterface {
 
         Image background = new Image(MySkin.getInstance().newDrawable("white", new Color(1.0f, 1.0f, 1.0f, 0.80480478f)));
         background.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        background.addListener(new InputListener(){
+        background.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -188,12 +195,13 @@ public class UserInterface {
         useCompass.getImageCell().size(100, 100);
         useCompass.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 ARNature.useCompass(useCompass.isChecked());
                 ARNature.setAngle(0);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -203,14 +211,15 @@ public class UserInterface {
         ImageTextButton calibrateCamera = createImageTextButton("Calibrate camera");
         calibrateCamera.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 showActor(calibrationDoneButton);
                 showActor(calibrationSlider);
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f);
                 ARNature.canRotateCamera(true);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -218,12 +227,13 @@ public class UserInterface {
         ImageTextButton downloadSurroundingData = createImageTextButton("Download Surrounding Data");
         downloadSurroundingData.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 moveActor(mainMenu, Gdx.graphics.getWidth(), 0.0f);
                 ARNature.downloadSurroundingData();
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -231,12 +241,13 @@ public class UserInterface {
         ImageTextButton showLegend = createImageTextButton("Show Legend");
         showLegend.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 if (hideActor(mainMenu))
                     showActor(legend);
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
@@ -292,16 +303,17 @@ public class UserInterface {
         scrollPane.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         legend.addActor(scrollPane);
-        legend.addListener(new InputListener(){
+        legend.addListener(new InputListener() {
             @Override
-            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 if (event.isHandled()) {
                     if (hideActor(legend))
                         showActor(mainMenu);
                 }
             }
+
             @Override
-            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });

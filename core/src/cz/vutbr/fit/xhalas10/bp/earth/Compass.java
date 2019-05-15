@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.earth;
 
 import com.badlogic.gdx.Gdx;
@@ -12,8 +17,8 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
 import cz.vutbr.fit.xhalas10.bp.gui.MySkin;
-import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
+import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 
 public class Compass extends EarthObject implements ISceneDrawableObject {
     private static final float size = 0.6f;

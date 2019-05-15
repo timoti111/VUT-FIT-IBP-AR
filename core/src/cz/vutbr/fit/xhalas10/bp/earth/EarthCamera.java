@@ -1,3 +1,8 @@
+/* Copyright (C) 2019 Timotej Halas (xhalas10).
+ * This file is part of bachelor thesis.
+ * Licensed under MIT.
+ */
+
 package cz.vutbr.fit.xhalas10.bp.earth;
 
 import com.badlogic.gdx.Gdx;
@@ -10,22 +15,21 @@ import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneCamera;
 
 public class EarthCamera extends EarthObject implements ISceneCamera {
+    private static Quaternion tmpQuat = new Quaternion();
     private Camera camera;
     private float height;
     private Quaternion sensorQuaternion;
     private Quaternion angleCorrectionQuaternion;
 
     public EarthCamera(ICameraPreview hardwareCamera) {
-        double ratio = (double) Gdx.graphics.getWidth() / (double)Gdx.graphics.getHeight();
+        double ratio = (double) Gdx.graphics.getWidth() / (double) Gdx.graphics.getHeight();
         double fovy = Math.toDegrees(2.0 * Math.atan((hardwareCamera.getCameraSensorSize()[0] * (1.0 / ratio)) / (2.0 * (double) hardwareCamera.getCameraFocalLength())));
-        camera = new PerspectiveCamera((float)fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera = new PerspectiveCamera((float) fovy, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 0.01f;
         camera.far = 20000f;
         angleCorrectionQuaternion = new Quaternion();
         setCorrectionAngle(0.0f);
     }
-
-    private static Quaternion tmpQuat = new Quaternion();
 
     @Override
     public void update() {
