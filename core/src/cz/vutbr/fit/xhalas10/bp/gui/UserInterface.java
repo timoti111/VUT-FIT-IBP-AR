@@ -33,6 +33,10 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.moveTo;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.run;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 
+/**
+ * This class implements user interface and actions which are done when user is interacting with
+ * it.
+ */
 public class UserInterface {
     private static float offsetValue = 0.0f;
     private static float lastValue = 0.0f;

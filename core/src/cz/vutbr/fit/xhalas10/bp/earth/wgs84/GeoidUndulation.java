@@ -10,14 +10,23 @@ import com.badlogic.gdx.files.FileHandle;
 
 import java.io.ObjectInputStream;
 
-// http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html
-// https://stackoverflow.com/questions/22196714/wgs84-geoid-height-altitude-offset-for-external-gps-data-on-ios
+/**
+ * This class implements EGM96 model for getting undulation based on geographic latitude,
+ * longitude. It is port from this Fortran program:
+ * http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/f477.f
+ * In program above double arrays cc, cs, hc and hs are computed on each run. It is not cheap
+ * operation so I precomputed them, saved to files and they are only loaded from these files
+ * on each run.
+ *
+ * More info here:
+ * http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/egm96.html
+ */
 public class GeoidUndulation {
     private final static int l_value = 65341;
     private final static int _361 = 361;
     private final static double gm = .3986004418e15, ae = 6378137.;
     private final static double a = 6378137., e2 = .00669437999013, geqt = 9.7803253359, k = .00193185265246;
-    private static final GeoidUndulation ourInstance = new GeoidUndulation();
+    private static final GeoidUndulation instance = new GeoidUndulation();
     private static double[] cc;
     private static double[] cs;
     private static double[] hc;
@@ -59,7 +68,7 @@ public class GeoidUndulation {
     }
 
     public static GeoidUndulation getInstance() {
-        return ourInstance;
+        return instance;
     }
 
     public double getUndulation(double lat, double lon) {
@@ -158,9 +167,9 @@ public class GeoidUndulation {
         x = t2 * Math.cos(lon);
         y = t2 * Math.sin(lon);
         z = (n * (1 - e2)) * Math.sin(lat);
-        re[0] = Math.sqrt(x * x + y * y + z * z);/*compute the geocentric radius*/
-        rlat[0] = Math.atan(z / Math.sqrt(x * x + y * y));/*compute the geocentric latitude*/
-        gr[0] = geqt * (1 + k * t1) / Math.sqrt(1 - e2 * t1);/*compute normal gravity:units are m/sec**2*/
+        re[0] = Math.sqrt(x * x + y * y + z * z);
+        rlat[0] = Math.atan(z / Math.sqrt(x * x + y * y));
+        gr[0] = geqt * (1 + k * t1) / Math.sqrt(1 - e2 * t1);
     }
 
     private double undulation(double lat, double lon, int nmax, int k) {

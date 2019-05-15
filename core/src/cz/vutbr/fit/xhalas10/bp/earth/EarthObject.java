@@ -12,6 +12,10 @@ import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneObject;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
+/**
+ * This class implements methods from interface ISceneObject.
+ * Implements it as object which positioning is based on geographic location.
+ */
 public abstract class EarthObject implements ISceneObject {
     Vector3 originRelativePosition;
     private Vector3d scenePosition;

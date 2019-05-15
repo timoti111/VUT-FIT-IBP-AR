@@ -12,6 +12,12 @@ import com.badlogic.gdx.utils.Array;
 
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 
+/**
+ * This class filters objects. First it chooses horizontal sector where object is positioned from
+ * camera view and then Sector class chooses vertical part where object is positioned. So view is
+ * now split to parts and in each part only one object can be set from all possible objects for
+ * this part. This selection is done by class Sector.
+ */
 class SceneObjectFilter {
     private static final int quadrantHorizontalParts = 5;
     private Array<Sector> sectors;
@@ -86,6 +92,12 @@ class SceneObjectFilter {
     }
 }
 
+/**
+ * This class firstly selects vertical part where object can be placed and then looks if object
+ * can be placed there. This is accomplished by comparing priority, distance from camera and angle
+ * of view to object between object which is actually in this part and object which is to be
+ * or not to be set here.
+ */
 class Sector {
     private static final int quadrantVerticalParts = 5;
     private Array<ISceneDrawableObject> visibleObjects;
@@ -139,24 +151,6 @@ class Sector {
                             if (newSceneDrawableObjectDistance < actualSceneDrawableObjectDistance)
                                 visibleObjects.set(index, newSceneDrawableObject);
                     }
-
-
-//                    if (newSceneDrawableObjectDistance < newSceneDrawableObject.getMaximumDrawableDistance()) {
-//                        if (newSceneDrawableObjectDistance < actualSceneDrawableObjectDistance) {
-//                            if (newSceneDrawableObjectAngle < actualSceneDrawableObjectAngle) {
-//                                if (newSceneDrawableObject.getMaximumDrawableDistance() > newSceneDrawableObject.getMaximumDrawableDistance())
-//                                    visibleObjects.set(index, newSceneDrawableObject);
-//                            } else {
-//                                visibleObjects.set(index, newSceneDrawableObject);
-//                            }
-//                        } else {
-//                            if (newSceneDrawableObjectAngle > actualSceneDrawableObjectAngle) {
-//                                visibleObjects.set(index, newSceneDrawableObject);
-//                            }
-//                        }
-//                    }
-
-
                 }
             }
         }

@@ -7,6 +7,11 @@ package cz.vutbr.fit.xhalas10.bp.utils;
 
 import com.badlogic.gdx.math.Vector3;
 
+/**
+ * This is basic implementation of Vector same as libGDX Vector3 except it is based on type double.
+ * It implements only some of all operations which can be done with vectors. Ones that are needed
+ * for this project.
+ */
 public class Vector3d {
     private double x;
     private double y;
@@ -73,6 +78,4 @@ public class Vector3d {
     public Vector3 toVector3() {
         return new Vector3((float) this.x, (float) this.y, (float) this.z);
     }
-
-
 }

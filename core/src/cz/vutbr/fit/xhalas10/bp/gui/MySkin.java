@@ -21,6 +21,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 import cz.vutbr.fit.xhalas10.bp.utils.FontGenerator;
 
+/**
+ * This class extends libGDX class Skin. It loads all textures and sets style of some UI
+ * elements.
+ */
 public class MySkin extends Skin {
     private static final int FONT_SIZE = 40;
     private static final MySkin ourInstance = new MySkin();

@@ -7,6 +7,10 @@ package cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces;
 
 import com.badlogic.gdx.math.Quaternion;
 
+/**
+ * This is interface for core module for communication with platform specific implementation
+ * of motion sensors.
+ */
 public interface IMotionSensors {
     void useCompass(boolean useCompass);
 

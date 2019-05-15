@@ -22,6 +22,11 @@ import cz.vutbr.fit.xhalas10.bp.osm.OSMData;
 import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 import cz.vutbr.fit.xhalas10.bp.utils.TextureTextGenerator;
 
+/**
+ * This is main class which is managing everything with using all other classes in this package.
+ * Firstly it initializes everything needed and then renders scene when new camera frame is
+ * available.
+ */
 public class ARNature extends ApplicationAdapter {
     private final double TOUCH_SCALE_FACTOR = 63.0 / 1920.0;
     private Stage stage;

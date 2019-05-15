@@ -5,6 +5,10 @@
 
 package cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces;
 
+/**
+ * This is interface for core module for accessing implementations of all other interfaces in this
+ * package.
+ */
 public interface IUtils {
     void showToast(String string);
 

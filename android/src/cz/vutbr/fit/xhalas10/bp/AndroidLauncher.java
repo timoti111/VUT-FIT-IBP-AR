@@ -27,6 +27,11 @@ import cz.vutbr.fit.xhalas10.bp.android.implementation.DeviceLocation;
 import cz.vutbr.fit.xhalas10.bp.android.implementation.MotionSensors;
 import cz.vutbr.fit.xhalas10.bp.android.implementation.Utils;
 
+/**
+ * This is starting activity. It serves for initialization of application and creation
+ * of AR nature class instance from module core. It also serves for checking permissions
+ * needed for functioning.
+ */
 public class AndroidLauncher extends AndroidApplication implements ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int ALL_PERMISSIONS_RESULT = 1011;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;

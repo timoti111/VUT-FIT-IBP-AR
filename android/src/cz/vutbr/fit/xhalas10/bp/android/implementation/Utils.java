@@ -13,6 +13,11 @@ import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IDeviceLocation;
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IMotionSensors;
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IUtils;
 
+/**
+ * This class serves for communication with module core.
+ * It also implements IUtils interface from module core and package
+ * cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces
+ */
 public class Utils implements IUtils {
     private AndroidLauncher context;
     private CameraPreview cameraPreview;

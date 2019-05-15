@@ -17,6 +17,12 @@ import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneCamera;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
+/**
+ * This class serves for managing all objects in scene. Class SceneObjectFilter is used to filter
+ * only visible objects and then they are rendered. It also manages origin of scene and moves
+ * full scene so camera is at point (0, 0, 0) after camera is far away from origin. It is because
+ * of bad float precision when objects are too far away from point (0, 0, 0).
+ */
 public class SceneManager implements Disposable {
     private static final float SCALE = 0.1f;
     private static final double MAXIMUM_CAMERA_DISTANCE = 20.0f;

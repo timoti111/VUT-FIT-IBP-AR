@@ -31,6 +31,10 @@ import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 import cz.vutbr.fit.xhalas10.bp.utils.TextureTextGenerator;
 
+/**
+ * This class models POI model for drawing in scene. It's texture is determined by map data
+ * from Node. It also writes height and distance from camera to its texture.
+ */
 public class Poi extends EarthObject implements ISceneDrawableObject {
     private static final float POI_HEIGHT_AT_1M = 0.04f;
     private static final float FONT_HEIGHT_AT_1M = 0.025f;
@@ -224,7 +228,7 @@ public class Poi extends EarthObject implements ISceneDrawableObject {
         this.maximumDrawableDistance = maximumDrawableDistance;
     }
 
-    private void setPositionLookAtTarget(Vector3 target) {
+    private void setLookAtTarget(Vector3 target) {
         objToCam.set(target).sub(originRelativePosition);
         float size = objToCam.len();
         objToCam.y = 0.0f;
@@ -242,7 +246,7 @@ public class Poi extends EarthObject implements ISceneDrawableObject {
         modelInstance.getMaterial("DistanceHolder").set(TextureAttribute.createDiffuse(distanceTexture.getColorBufferTexture()));
         modelInstance.getNode("distance").scale.set((float) distanceTexture.getWidth() / (float) distanceTexture.getHeight(), 1.0f, 1.0f);
         modelInstance.calculateTransforms();
-        setPositionLookAtTarget(SceneManager.getInstance().getSceneCamera().getOriginRelativePosition());
+        setLookAtTarget(SceneManager.getInstance().getSceneCamera().getOriginRelativePosition());
     }
 
     @Override
@@ -257,10 +261,5 @@ public class Poi extends EarthObject implements ISceneDrawableObject {
     @Override
     public boolean isAlive() {
         return alive;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 }

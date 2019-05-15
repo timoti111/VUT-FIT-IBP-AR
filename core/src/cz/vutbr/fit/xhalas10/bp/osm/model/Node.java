@@ -13,6 +13,9 @@ import org.w3c.dom.NodeList;
 import java.io.Serializable;
 import java.util.HashMap;
 
+/**
+ * This class is for storing all data of nodes from OSM.
+ */
 public class Node implements Serializable {
     private Long id;
     private LatLng location;

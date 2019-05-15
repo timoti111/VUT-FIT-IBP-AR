@@ -9,6 +9,10 @@ import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
+/**
+ * This class serves for storing geographic. It also computes geodetic altitude from WGS84 system.
+ * It calculates direction vectors based on location.
+ */
 public class Location {
     private static final double A = 6378137.0;
     private static final double B_SQ_DIV_A_SQ = 0.99330562;

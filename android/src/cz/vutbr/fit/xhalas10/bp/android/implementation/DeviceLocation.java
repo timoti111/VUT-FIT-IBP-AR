@@ -32,6 +32,11 @@ import com.google.android.gms.tasks.Task;
 import cz.vutbr.fit.xhalas10.bp.earth.wgs84.GeoidUndulation;
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IDeviceLocation;
 
+/**
+ * This class implements getting actual location of device via Google Play Services.
+ * It also implements IDeviceLocation interface from module core and package
+ * cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces
+ */
 public class DeviceLocation implements IDeviceLocation, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
     public static final int REQUEST_CHECK_SETTINGS = 8465;

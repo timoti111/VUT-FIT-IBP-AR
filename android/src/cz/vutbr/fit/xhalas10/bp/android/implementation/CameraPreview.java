@@ -37,51 +37,56 @@ import java.util.concurrent.TimeUnit;
 
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
 
+/**
+ * This class serves for setting camera preview and than it can render it.
+ * It also implements ICameraPreview interface from module core and package
+ * cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces
+ */
 public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, ICameraPreview {
-    static final int FPS = 60;
+    static final int FPS = 60; // If you can't see preview try to compile with 30 FPS.
 
-    private SurfaceTexture mSTexture;
-    private boolean mUpdateST = false;
+    private SurfaceTexture surfaceTexture;
+    private boolean updateSurfaceTexture = false;
 
-    private String mCameraID;
-    private float[] mFocalLengths;
+    private String cameraID;
+    private float[] focalLengths;
     private float[] sensorSize;
-    private CameraDevice mCameraDevice;
-    private CameraCaptureSession mCaptureSession;
-    private CaptureRequest.Builder mPreviewRequestBuilder;
-    private Size mPreviewSize = new Size(1920, 1080);
+    private CameraDevice cameraDevice;
+    private CameraCaptureSession cameraCaptureSession;
+    private CaptureRequest.Builder captureRequestBuilder;
+    private Size previewSize = new Size(1920, 1080);
     private Range<Integer> fpsRange = Range.create(FPS, FPS);
     private int[] texture = new int[1];
 
-    private Semaphore mCameraOpenCloseLock = new Semaphore(1);
+    private Semaphore cameraOpenCloseLock = new Semaphore(1);
     private CameraManager cameraManager;
 
-    private HandlerThread mBackgroundThread;
-    private Handler mBackgroundHandler;
-    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+    private HandlerThread handlerThread;
+    private Handler handler;
+    private final CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
-            mCameraOpenCloseLock.release();
-            mCameraDevice = cameraDevice;
+            cameraOpenCloseLock.release();
+            CameraPreview.this.cameraDevice = cameraDevice;
             createCameraPreviewSession();
         }
 
         @Override
         public void onDisconnected(CameraDevice cameraDevice) {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
             cameraDevice.close();
-            mCameraDevice = null;
+            CameraPreview.this.cameraDevice = null;
         }
 
         @Override
         public void onError(CameraDevice cameraDevice, int error) {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
             cameraDevice.close();
-            mCameraDevice = null;
+            CameraPreview.this.cameraDevice = null;
         }
     };
-    private ShaderProgram shader; //Our shader
-    private Mesh mesh; //Our mesh that we will draw the texture on
+    private ShaderProgram shader;
+    private Mesh mesh;
 
     public CameraPreview(CameraManager cameraManager) {
         this.cameraManager = cameraManager;
@@ -92,10 +97,10 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
     }
 
     public float getCameraFocalLength() {
-        return mFocalLengths[0];
+        return focalLengths[0];
     }
 
-    private void initTex() {
+    private void initTexture() {
         texture[0] = Gdx.gl.glGenTexture();
         Gdx.gl.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0]);
         Gdx.gl.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, Gdx.gl.GL_TEXTURE_WRAP_S, Gdx.gl.GL_CLAMP_TO_EDGE);
@@ -106,7 +111,7 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
 
     @Override
     public synchronized void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        mUpdateST = true;
+        updateSurfaceTexture = true;
         Gdx.graphics.requestRendering();
     }
 
@@ -117,18 +122,18 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
                 CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraID);
                 //noinspection ConstantConditions
                 if (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
-                    mCameraID = cameraID;
+                    this.cameraID = cameraID;
                     StreamConfigurationMap map = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-                    mFocalLengths = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-                    SizeF mSensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
-                    sensorSize = new float[2];
-                    sensorSize[0] = Objects.requireNonNull(mSensorSize).getWidth();
-                    sensorSize[1] = mSensorSize.getHeight();
+                    focalLengths = cameraCharacteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+                    SizeF sensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+                    this.sensorSize = new float[2];
+                    this.sensorSize[0] = Objects.requireNonNull(sensorSize).getWidth();
+                    this.sensorSize[1] = sensorSize.getHeight();
 
                     assert map != null;
                     for (Size psize : map.getOutputSizes(SurfaceTexture.class)) {
                         if (width == psize.getWidth() && height == psize.getHeight()) {
-                            mPreviewSize = psize;
+                            previewSize = psize;
                             break;
                         }
                     }
@@ -148,10 +153,10 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
         try {
             assert cameraManager != null;
 
-            if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+            if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
-            cameraManager.openCamera(mCameraID, mStateCallback, mBackgroundHandler);
+            cameraManager.openCamera(cameraID, cameraDeviceStateCallback, handler);
         } catch (CameraAccessException e) {
             Log.e("mr", "OpenCamera - Camera Access Exception");
         } catch (IllegalArgumentException e) {
@@ -165,45 +170,45 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
 
     private void closeCamera() {
         try {
-            mCameraOpenCloseLock.acquire();
-            if (null != mCaptureSession) {
-                mCaptureSession.close();
-                mCaptureSession = null;
+            cameraOpenCloseLock.acquire();
+            if (null != cameraCaptureSession) {
+                cameraCaptureSession.close();
+                cameraCaptureSession = null;
             }
-            if (null != mCameraDevice) {
-                mCameraDevice.close();
-                mCameraDevice = null;
+            if (null != cameraDevice) {
+                cameraDevice.close();
+                cameraDevice = null;
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
         } finally {
-            mCameraOpenCloseLock.release();
+            cameraOpenCloseLock.release();
         }
     }
 
     private void createCameraPreviewSession() {
         try {
-            mSTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+            surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
 
-            Surface surface = new Surface(mSTexture);
+            Surface surface = new Surface(surfaceTexture);
 
-            mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            mPreviewRequestBuilder.addTarget(surface);
-            mCameraDevice.createCaptureSession(Collections.singletonList(surface),
+            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            captureRequestBuilder.addTarget(surface);
+            cameraDevice.createCaptureSession(Collections.singletonList(surface),
                     new CameraCaptureSession.StateCallback() {
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-                            if (null == mCameraDevice)
+                            if (null == cameraDevice)
                                 return;
 
-                            mCaptureSession = cameraCaptureSession;
+                            CameraPreview.this.cameraCaptureSession = cameraCaptureSession;
                             try {
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                                mPreviewRequestBuilder.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
+                                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
+                                captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+                                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                                captureRequestBuilder.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
 
-                                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
+                                CameraPreview.this.cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, handler);
                             } catch (CameraAccessException e) {
                                 Log.e("mr", "createCaptureSession");
                             }
@@ -221,7 +226,7 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
 
     public void onResume() {
         startBackgroundThread();
-        if (mPreviewRequestBuilder != null)
+        if (captureRequestBuilder != null)
             openCamera();
     }
 
@@ -231,17 +236,17 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
     }
 
     private void startBackgroundThread() {
-        mBackgroundThread = new HandlerThread("CameraBackground");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        handlerThread = new HandlerThread("CameraBackground");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
     }
 
     private void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
+        handlerThread.quitSafely();
         try {
-            mBackgroundThread.join();
-            mBackgroundThread = null;
-            mBackgroundHandler = null;
+            handlerThread.join();
+            handlerThread = null;
+            handler = null;
         } catch (InterruptedException e) {
             Log.e("mr", "stopBackgroundThread");
         }
@@ -263,15 +268,14 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
                 1.0f, 1.0f,   // Position 3
                 1.0f, 0.0f    // TexCoord 3
         };
-        //The indices come in trios of vertex indices that describe the triangles of our mesh
+
         short[] indices = {0, 1, 2, 0, 2, 3};
-        //Set vertices and indices to our mesh
         mesh.setVertices(vertices);
         mesh.setIndices(indices);
         mesh.transform(new Matrix4().idt().scale(1.0f, Gdx.graphics.getWidth() / 1920.0f, 1.0f));
-        initTex();
-        mSTexture = new SurfaceTexture(texture[0]);
-        mSTexture.setOnFrameAvailableListener(this);
+        initTexture();
+        surfaceTexture = new SurfaceTexture(texture[0]);
+        surfaceTexture.setOnFrameAvailableListener(this);
 
         getCameraInfo(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         openCamera();
@@ -280,9 +284,9 @@ public class CameraPreview implements SurfaceTexture.OnFrameAvailableListener, I
     @Override
     public void renderBackground() {
         synchronized (this) {
-            if (mUpdateST) {
-                mSTexture.updateTexImage();
-                mUpdateST = false;
+            if (updateSurfaceTexture) {
+                surfaceTexture.updateTexImage();
+                updateSurfaceTexture = false;
             }
         }
         Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);

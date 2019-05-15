@@ -16,6 +16,10 @@ import com.badlogic.gdx.math.Matrix4;
 
 import cz.vutbr.fit.xhalas10.bp.gui.MySkin;
 
+/**
+ * This class instead of drawing text to screen draws it to FrameBuffer object which then can be
+ * used to draw text to objects. Texture can be created from FrameBuffer.
+ */
 public class TextureTextGenerator {
     private static GlyphLayout glyphLayout = new GlyphLayout();
     private static SpriteBatch batch = new SpriteBatch();

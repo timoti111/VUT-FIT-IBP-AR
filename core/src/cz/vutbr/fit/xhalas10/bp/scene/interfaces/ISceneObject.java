@@ -9,6 +9,10 @@ import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.utils.Vector3d;
 
+/**
+ * This is interface for SceneManager for working with any object in scene. It is mainly for
+ * positioning of object in scene.
+ */
 public interface ISceneObject {
     void calculateOriginRelativePosition();
 

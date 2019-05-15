@@ -8,6 +8,9 @@ package cz.vutbr.fit.xhalas10.bp.scene.interfaces;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 
+/**
+ * This is interface for SceneManager for working with camera in scene.
+ */
 public interface ISceneCamera extends ISceneObject {
     Camera getCamera();
 

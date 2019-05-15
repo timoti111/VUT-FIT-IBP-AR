@@ -40,9 +40,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import cz.vutbr.fit.xhalas10.bp.earth.wgs84.Location;
 import cz.vutbr.fit.xhalas10.bp.osm.model.Node;
 
+/**
+ * This class is for downloading surrounding data via Overpass API. When data is downloaded Google
+ * Elevation API is used for getting missing height data. After everything is downloaded all is
+ * saved to storage of device. After app is loaded all data is restored.
+ */
 public class OSMData {
     private final static String DEFAULT_MAP = "maps/default.map";
-    private static final OSMData ourInstance = new OSMData();
+    private static final OSMData instance = new OSMData();
     private HashMap<Long, Node> nodes;
     private GeoApiContext context;
 
@@ -51,6 +56,7 @@ public class OSMData {
             InputStream inputStream = Gdx.files.local(DEFAULT_MAP).read();
             try {
                 ObjectInputStream is = new ObjectInputStream(inputStream);
+                //noinspection unchecked
                 nodes = (HashMap<Long, Node>) is.readObject();
                 is.close();
                 return;
@@ -62,7 +68,7 @@ public class OSMData {
     }
 
     public static OSMData getInstance() {
-        return ourInstance;
+        return instance;
     }
 
     public void getSurroundingData(Location location, double vicinityRangeMeters) {
@@ -161,13 +167,13 @@ public class OSMData {
         }
     }
 
+    /**
+     * This class only serves to send query to Overpass API server and returns parsed XML response
+     * as Document class.
+     */
     static class OverPassWrapperAPI {
         private static final String OVERPASS_API = "https://overpass.kumi.systems/api/interpreter";
 
-        /**
-         * @param query the overpass query
-         * @return the nodes in the formulated query
-         */
         static Document getNodesViaOverpass(String query) throws IOException, ParserConfigurationException, SAXException {
             URL osm = new URL(OVERPASS_API);
             HttpURLConnection connection = (HttpURLConnection) osm.openConnection();

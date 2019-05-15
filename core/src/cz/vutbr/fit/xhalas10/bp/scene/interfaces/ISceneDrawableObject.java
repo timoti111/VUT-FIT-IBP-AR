@@ -8,6 +8,9 @@ package cz.vutbr.fit.xhalas10.bp.scene.interfaces;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.utils.Disposable;
 
+/**
+ * This is interface for SceneManager for working with drawable object in scene.
+ */
 public interface ISceneDrawableObject extends ISceneObject, Disposable {
     RenderableProvider getRenderableProvider();
 
@@ -16,6 +19,4 @@ public interface ISceneDrawableObject extends ISceneObject, Disposable {
     void create();
 
     boolean isAlive();
-
-    String getName();
 }

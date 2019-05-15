@@ -14,6 +14,10 @@ import com.badlogic.gdx.math.Vector3;
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.ICameraPreview;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneCamera;
 
+/**
+ * This class implements camera in scene with all needed transformations.
+ * It also calibrates perspective to camera sensor.
+ */
 public class EarthCamera extends EarthObject implements ISceneCamera {
     private static Quaternion tmpQuat = new Quaternion();
     private Camera camera;

@@ -15,6 +15,11 @@ import com.badlogic.gdx.math.Vector3;
 
 import cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces.IMotionSensors;
 
+/**
+ * This class implements getting data from GameRotationVector and RotationVector sensors.
+ * It also implements IMotionSensors interface from module core and package
+ * cz.vutbr.fit.xhalas10.bp.multiplatform.interfaces
+ */
 public class MotionSensors implements SensorEventListener, IMotionSensors {
     private static final Quaternion correctionQuaternion = new Quaternion(Vector3.X, -90.0f).mulLeft(new Quaternion(Vector3.Y, -90.0f));
     private static final Quaternion tmpQuat = new Quaternion();

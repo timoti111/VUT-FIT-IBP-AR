@@ -20,6 +20,9 @@ import cz.vutbr.fit.xhalas10.bp.gui.MySkin;
 import cz.vutbr.fit.xhalas10.bp.scene.SceneManager;
 import cz.vutbr.fit.xhalas10.bp.scene.interfaces.ISceneDrawableObject;
 
+/**
+ * This class models compass model for drawing in scene.
+ */
 public class Compass extends EarthObject implements ISceneDrawableObject {
     private static final float size = 0.6f;
     private static Model model = buildPoiModel();
@@ -71,11 +74,6 @@ public class Compass extends EarthObject implements ISceneDrawableObject {
     @Override
     public boolean isAlive() {
         return false;
-    }
-
-    @Override
-    public String getName() {
-        return "compass";
     }
 
     @Override
