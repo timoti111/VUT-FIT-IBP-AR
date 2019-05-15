@@ -24,10 +24,7 @@ public class Location {
     private double cosLat, cosLon, sinLat, sinLon;
 
     public Location(double latitude, double longitude, double altitude) {
-        this.cartesian = new Vector3d();
-        this.normalVector = new Vector3();
-        this.southVector = new Vector3();
-        this.eastVector = new Vector3();
+        this();
         set(latitude, longitude, altitude);
     }
 
@@ -36,6 +33,10 @@ public class Location {
     }
 
     public Location() {
+        this.cartesian = new Vector3d();
+        this.normalVector = new Vector3();
+        this.southVector = new Vector3();
+        this.eastVector = new Vector3();
     }
 
     public void set(double latitude, double longitude, double altitude) {
